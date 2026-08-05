@@ -1,4 +1,5 @@
-import PREDEFINED_NODE_TEMPLATES from "../templates";
+import { useState } from "react";
+import PredefinedNodeModal from "./PredefinedNodeModal";
 
 export default function Sidebar({
   selectedTemplateKey, setSelectedTemplateKey, addPredefinedNode,
@@ -10,6 +11,8 @@ export default function Sidebar({
   setEditingParamValue, saveEditedParameter, setEditingParamKey,
   moveParameter, startEditingParameter, removeParameter, updatePortCount,
 }) {
+  const [isPredefinedNodeModalOpen, setIsPredefinedNodeModalOpen] = useState(false);
+  
   return (
     <aside
       style={{
@@ -25,28 +28,20 @@ export default function Sidebar({
       }}
     >
       <h2>Graph Editor</h2>
-<div
-        style={{
-          display: "flex",
-          gap: 6,
-          marginBottom: 8,
-        }}
+      <button
+        onClick={() => setIsPredefinedNodeModalOpen(true)}
+        style={{ width: "100%", marginBottom: 8 }}
       >
-        <select
-          value={selectedTemplateKey}
-          onChange={(event) => setSelectedTemplateKey(event.target.value)}
-          style={{ flex: 1, minWidth: 0 }}
-        >
-          {Object.keys(PREDEFINED_NODE_TEMPLATES).map((templateKey) => (
-            <option key={templateKey} value={templateKey}>
-              {templateKey}
-            </option>
-          ))}
-        </select>
-        <button onClick={addPredefinedNode} style={{ flex: 1.3 }}>
-          + Add Predefined Node
-        </button>
-      </div>
+        + Add Predefined Node
+      </button>
+
+      <PredefinedNodeModal
+        isOpen={isPredefinedNodeModalOpen}
+        onClose={() => setIsPredefinedNodeModalOpen(false)}
+        selectedTemplateKey={selectedTemplateKey}
+        setSelectedTemplateKey={setSelectedTemplateKey}
+        addPredefinedNode={addPredefinedNode}
+      />
 
       <button onClick={exportJson} style={{ width: "100%" }}>
         Export JSON
