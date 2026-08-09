@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Handle, Position, useUpdateNodeInternals } from "@xyflow/react";
+
 import {
   getInputPortName,
   getOutputPortName,
@@ -7,11 +8,29 @@ import {
   getTargetHandleId,
 } from "../utils/ports";
 
+import { getNodeIcon } from "../config/nodeIcons";
+
+const actionButtonStyle = {
+  width: 26,
+  height: 24,
+  padding: 0,
+  borderRadius: 5,
+  border: "1px solid #bbb",
+  background: "white",
+  color: "#333",
+  fontSize: 13,
+  lineHeight: "22px",
+  cursor: "pointer",
+  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+};
+
 export default function CustomNode({ id, data }) {
   const inputCount = Math.max(1, Number(data.inputCount) || 1);
   const outputCount = Math.max(1, Number(data.outputCount) || 1);
-  const paramOrder = data.paramOrder || Object.keys(data.params || {});
   const updateNodeInternals = useUpdateNodeInternals();
+
+  const nodeType = data.params?.type || "";
+  const nodeIcon = getNodeIcon(nodeType);
 
   useEffect(() => {
     updateNodeInternals(id);
@@ -20,16 +39,40 @@ export default function CustomNode({ id, data }) {
   return (
     <div
       style={{
-        width: 340,
-        padding: "12px 86px",
+        width: 180,
+        height: 110,
+        padding: "12px 58px",
         border: "1px solid #333",
-        borderRadius: 8,
+        borderRadius: 10,
         background: "white",
         boxSizing: "border-box",
         position: "relative",
-        overflow: "hidden",
+        overflow: "visible",
       }}
     >
+      {/* Asset/node name above the node */}
+      <div
+        style={{
+          position: "absolute",
+          left: "50%",
+          bottom: "calc(100% + 7px)",
+          transform: "translateX(-50%)",
+          width: 220,
+          fontWeight: 700,
+          fontSize: 12,
+          textAlign: "center",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          color: "#222",
+          pointerEvents: "none",
+        }}
+        title={data.label}
+      >
+        {data.label}
+      </div>
+
+      {/* Input ports + names */}
       {Array.from({ length: inputCount }).map((_, index) => {
         const portName = getInputPortName(index);
         const top = `${((index + 1) / (inputCount + 1)) * 100}%`;
@@ -42,6 +85,7 @@ export default function CustomNode({ id, data }) {
               position={Position.Left}
               style={{ top }}
             />
+
             <span
               style={{
                 position: "absolute",
@@ -53,6 +97,7 @@ export default function CustomNode({ id, data }) {
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
                 fontSize: 10,
+                fontWeight: 600,
                 color: "#555",
                 pointerEvents: "none",
               }}
@@ -64,47 +109,75 @@ export default function CustomNode({ id, data }) {
         );
       })}
 
+      {/* Icon */}
       <div
         style={{
-          fontWeight: 700,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
-        title={data.label}
       >
-        {data.label}
+        <img
+          src={nodeIcon}
+          alt={nodeType || "node"}
+          draggable={false}
+          style={{
+            width: 54,
+            height: 54,
+            objectFit: "contain",
+            pointerEvents: "none",
+            userSelect: "none",
+          }}
+        />
       </div>
 
-      <div style={{ fontSize: 12, marginTop: 8 }}>
-        {paramOrder.map((key) => {
-          const parameterValue = data.params?.[key];
-          const displayValue =
-            parameterValue !== null && typeof parameterValue === "object"
-              ? JSON.stringify(parameterValue)
-              : String(parameterValue);
-          const parameterText = `${key}: ${displayValue}`;
+      {/* Small node action buttons below the node */}
+      <div
+        className="nodrag nopan"
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "calc(100% + 6px)",
+          transform: "translateX(-50%)",
+          display: "flex",
+          gap: 5,
+          zIndex: 5,
+        }}
+      >
+        <button
+          type="button"
+          title="Edit node parameters"
+          onMouseDown={(event) => {
+            event.stopPropagation();
+          }}
+          onClick={(event) => {
+            event.stopPropagation();
+            data.onOpenParameters?.(id);
+          }}
+          style={actionButtonStyle}
+        >
+          ⚙
+        </button>
 
-          return (
-            <div
-              key={key}
-              style={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-              title={parameterText}
-            >
-              {parameterText}
-            </div>
-          );
-        })}
+        <button
+          type="button"
+          title="Delete node"
+          onMouseDown={(event) => {
+            event.stopPropagation();
+          }}
+          onClick={(event) => {
+            event.stopPropagation();
+            data.onDeleteNode?.(id);
+          }}
+          style={actionButtonStyle}
+        >
+          🗑
+        </button>
       </div>
 
-      <div style={{ fontSize: 11, marginTop: 8, color: "#666" }}>
-        inputs: {inputCount}, outputs: {outputCount}
-      </div>
-
+      {/* Output ports + names */}
       {Array.from({ length: outputCount }).map((_, index) => {
         const portName = getOutputPortName(index);
         const top = `${((index + 1) / (outputCount + 1)) * 100}%`;
@@ -117,6 +190,7 @@ export default function CustomNode({ id, data }) {
               position={Position.Right}
               style={{ top }}
             />
+
             <span
               style={{
                 position: "absolute",
@@ -129,6 +203,7 @@ export default function CustomNode({ id, data }) {
                 whiteSpace: "nowrap",
                 textAlign: "right",
                 fontSize: 10,
+                fontWeight: 600,
                 color: "#555",
                 pointerEvents: "none",
               }}

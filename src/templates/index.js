@@ -1,6 +1,7 @@
 const PREDEFINED_NODE_TEMPLATES = {
+
   save_to_file: {
-    label: "save_to_file",
+    label: "Save as a File",
     inputCount: 2,
     outputCount: 1,
     params: {
@@ -20,6 +21,7 @@ const PREDEFINED_NODE_TEMPLATES = {
     },
     lockedParams: ["type"],
   },
+
   container_deployment_kubernetes: {
     label: "container_deployment_kubernetes",
     inputCount: 1,
@@ -60,6 +62,7 @@ const PREDEFINED_NODE_TEMPLATES = {
     nullableParams: ["registry"],
     lockedParams: ["type"],
   },
+
   zipper: {
     label: "zipper",
     inputCount: 1,
@@ -85,27 +88,25 @@ const PREDEFINED_NODE_TEMPLATES = {
     },
     lockedParams: ["type"],
   },
-  ds_static_file: {
-    label: "ds_static_file",
+
+  static_file: {
+    label: "Static File",
     inputCount: 1,
     outputCount: 2,
     params: {
-      type: "ds_static_file",
-      adapter_type: "",
+      type: "static_file",
       provider_bpn: "",
       provider_url: "",
       asset_id: "",
     },
     paramOrder: [
       "type",
-      "adapter_type",
       "provider_bpn",
       "provider_url",
       "asset_id",
     ],
     paramTypes: {
       type: "string",
-      adapter_type: "string",
       provider_bpn: "string",
       provider_url: "string",
       asset_id: "string",
@@ -115,13 +116,13 @@ const PREDEFINED_NODE_TEMPLATES = {
     },
     lockedParams: ["type"],
   },
-  ds_container: {
+
+  container: {
     label: "container_image",
     inputCount: 1,
     outputCount: 1,
     params: {
-      type: "ds_container",
-      adapter_type: "",
+      type: "container",
       provider_bpn: "",
       provider_url: "",
       asset_id: "",
@@ -135,7 +136,6 @@ const PREDEFINED_NODE_TEMPLATES = {
     },
     paramOrder: [
       "type",
-      "adapter_type",
       "provider_bpn",
       "provider_url",
       "asset_id",
@@ -147,7 +147,6 @@ const PREDEFINED_NODE_TEMPLATES = {
     ],
     paramTypes: {
       type: "string",
-      adapter_type: "string",
       provider_bpn: "string",
       provider_url: "string",
       asset_id: "string",
@@ -177,6 +176,7 @@ const PREDEFINED_NODE_TEMPLATES = {
     nullableParams: ["registry_addr"],
     lockedParams: ["type"],
   },
+
   unzipper: {
     label: "unzipper",
     inputCount: 1,
@@ -202,6 +202,7 @@ const PREDEFINED_NODE_TEMPLATES = {
     },
     lockedParams: ["type"],
   },
+
   send_to_url: {
     label: "send_to_url",
     inputCount: 2,

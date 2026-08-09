@@ -40,3 +40,28 @@ export const requestWorkflowExecution = async (workflowId) => {
   });
   return readResponse(response, "Execution request");
 };
+
+export const getAllWorkflows = async () => {
+  const response = await fetch(`${API_BASE_URL}/workflows/all`);
+  return readResponse(response, "Loading workflows");
+};
+
+export const deleteWorkflow = async (workflowId) => {
+  const response = await fetch(
+    `${API_BASE_URL}/workflows/${encodeURIComponent(workflowId)}`,
+    { method: "DELETE" }
+  );
+  return readResponse(response, "Workflow deletion");
+};
+
+
+export const getExecutions = async () => {
+  const response = await fetch(
+    `${API_BASE_URL}/execution`
+  );
+
+  return readResponse(
+    response,
+    "Loading executions"
+  );
+};

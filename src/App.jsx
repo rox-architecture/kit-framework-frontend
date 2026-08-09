@@ -4,9 +4,10 @@ import "@xyflow/react/dist/style.css";
 
 import CustomNode from "./components/CustomNode";
 import GraphCanvas from "./components/GraphCanvas";
-import Sidebar from "./components/Sidebar";
+import NodeParameterModal from "./components/NodeParameterModal";
 import PREDEFINED_NODE_TEMPLATES from "./templates";
 import { normalizeEdgeForCanvas, serializeGraph } from "./utils/graph";
+import { migrateGraph, getBaseNodeType } from "./utils/graphMigration";
 import { formatParamValue, getParamOrder, inferParamType, parseParamValue } from "./utils/params";
 import { createWorkflow, requestWorkflowExecution } from "./services/workflowApi";
 
@@ -24,6 +25,7 @@ export default function App() {
   const [selectedTemplateKey, setSelectedTemplateKey] = useState("save_to_file");
   const [isRunning, setIsRunning] = useState(false);
   const [runMessage, setRunMessage] = useState("");
+  const [isNodeParameterModalOpen, setIsNodeParameterModalOpen] = useState(false);
 
   const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
   const selectedNode = nodes.find((node) => node.id === selectedNodeId);
@@ -34,11 +36,15 @@ export default function App() {
     y: 100 + currentNodes.length * 30,
   });
 
-  const addPredefinedNode = () => {
-    const template = PREDEFINED_NODE_TEMPLATES[selectedTemplateKey];
+  const addPredefinedNode = (
+    templateKey = selectedTemplateKey,
+    paramOverrides = {},
+    labelOverride = null
+  ) => {
+    const template = PREDEFINED_NODE_TEMPLATES[templateKey];
     if (!template) return;
 
-    const id = `${selectedTemplateKey}-${Date.now()}`;
+    const id = `${templateKey}-${Date.now()}`;
 
     setNodes((currentNodes) => [
       ...currentNodes,
@@ -47,13 +53,18 @@ export default function App() {
         type: "custom",
         position: createNodePosition(currentNodes),
         data: {
-          label: template.label,
-          templateKey: selectedTemplateKey,
+          label: labelOverride || template.label,
+          templateKey,
           isPredefined: true,
-          params: { ...template.params },
+          params: {
+            ...template.params,
+            ...paramOverrides,
+          },
           paramOrder: [...template.paramOrder],
           paramTypes: { ...template.paramTypes },
-          paramValidators: { ...template.paramValidators },
+          paramValidators: { ...(template.paramValidators || {}) },
+          paramOptions: { ...(template.paramOptions || {}) },
+          nullableParams: [...(template.nullableParams || [])],
           lockedParams: [...(template.lockedParams || [])],
           inputCount: template.inputCount,
           outputCount: template.outputCount,
@@ -337,6 +348,19 @@ export default function App() {
     }
   };
 
+  const saveWorkflow = async (workflowName) => {
+    const graphJson = serializeGraph(nodes, edges);
+
+    const result = await createWorkflow(
+      workflowName,
+      graphJson
+    );
+
+    console.log("Workflow saved:", result);
+
+    return result;
+  };
+
   const exportJson = () => {
     const graph = serializeGraph(nodes, edges);
     const json = JSON.stringify(graph, null, 2);
@@ -353,6 +377,106 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
+  const normalizeGraphForCanvas = (graph) => {
+    if (!Array.isArray(graph?.nodes) || !Array.isArray(graph?.edges)) {
+      throw new Error("Invalid graph JSON. Expected { nodes: [], edges: [] }.");
+    }
+
+    const normalizedNodes = graph.nodes.map((node) => {
+      const loadedParams = {
+        ...(node.data?.params || {}),
+      };
+
+      // Template selection only cares about the base node type.
+      //
+      // dlr.static_file -> static_file
+      // tsi.static_file -> static_file
+      // dlr.container   -> container
+      //
+      // The actual params.type remains namespaced.
+      const templateKey = getBaseNodeType(
+        loadedParams.type ||
+          node.data?.templateKey
+      );
+
+      const template =
+        PREDEFINED_NODE_TEMPLATES[
+          templateKey
+        ] || null;
+
+      // Important:
+      // template.params only provides defaults.
+      // loadedParams is applied last so a namespaced type such as
+      // "dlr.static_file" is preserved.
+      //
+      // lockedParams means "not editable in the UI";
+      // it must NOT overwrite an already loaded type.
+      const params = template
+        ? {
+            ...template.params,
+            ...loadedParams,
+          }
+        : loadedParams;
+
+      return {
+        ...node,
+        measured: undefined,
+        selected: false,
+        dragging: false,
+        data: {
+          ...node.data,
+          templateKey,
+          params,
+          paramOrder: template
+            ? [...template.paramOrder]
+            : node.data?.paramOrder || Object.keys(params),
+          inputCount: template
+            ? template.inputCount
+            : Math.max(1, Number(node.data?.inputCount) || 1),
+          outputCount: template
+            ? template.outputCount
+            : Math.max(1, Number(node.data?.outputCount) || 1),
+          paramTypes: template
+            ? { ...template.paramTypes }
+            : Object.fromEntries(
+                Object.entries(params).map(([key, value]) => [
+                  key,
+                  node.data?.paramTypes?.[key] || inferParamType(value),
+                ])
+              ),
+          paramValidators: template
+            ? { ...(template.paramValidators || {}) }
+            : { ...(node.data?.paramValidators || {}) },
+          paramOptions: template
+            ? { ...(template.paramOptions || {}) }
+            : { ...(node.data?.paramOptions || {}) },
+          nullableParams: template
+            ? [...(template.nullableParams || [])]
+            : [...(node.data?.nullableParams || [])],
+          lockedParams: template
+            ? [...(template.lockedParams || [])]
+            : [...(node.data?.lockedParams || [])],
+        },
+      };
+    });
+
+    setNodes(normalizedNodes);
+    setEdges(graph.edges.map(normalizeEdgeForCanvas));
+    setSelectedNodeId(null);
+    setSelectedEdgeId(null);
+  };
+
+  const loadWorkflowGraph = (databaseGraph) => {
+    try {
+      // Keep stored node types exactly as they are.
+      // Example: "dlr.static_file" stays "dlr.static_file".
+      normalizeGraphForCanvas(databaseGraph);
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Failed to load workflow.");
+    }
+  };
+
   const importJson = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -361,73 +485,68 @@ export default function App() {
 
     reader.onload = (readerEvent) => {
       try {
-        const graph = JSON.parse(readerEvent.target.result);
+        const rawGraph = JSON.parse(
+          readerEvent.target.result
+        );
 
-        if (!Array.isArray(graph.nodes) || !Array.isArray(graph.edges)) {
-          alert("Invalid graph JSON. Expected { nodes: [], edges: [] }.");
-          return;
-        }
+        // File import supports legacy schemas.
+        // Database workflow load intentionally does NOT
+        // pass through this migration.
+        const graph = migrateGraph(rawGraph);
 
-        const normalizedNodes = graph.nodes.map((node) => {
-          const template = node.data?.templateKey
-            ? PREDEFINED_NODE_TEMPLATES[node.data.templateKey]
-            : null;
-          const params = template
-            ? { ...template.params, ...(node.data?.params || {}) }
-            : { ...(node.data?.params || {}) };
-
-          if (template?.lockedParams?.includes("type")) {
-            params.type = template.params.type;
-          }
-
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              params,
-              paramOrder: template
-                ? [...template.paramOrder]
-                : node.data?.paramOrder || Object.keys(params),
-              inputCount: template
-                ? template.inputCount
-                : Math.max(1, Number(node.data?.inputCount) || 1),
-              outputCount: template
-                ? template.outputCount
-                : Math.max(1, Number(node.data?.outputCount) || 1),
-              paramTypes: template
-                ? { ...template.paramTypes }
-                : Object.fromEntries(
-                    Object.entries(params).map(([key, value]) => [
-                      key,
-                      node.data?.paramTypes?.[key] || inferParamType(value),
-                    ])
-                  ),
-              paramValidators: template
-                ? { ...template.paramValidators }
-                : { ...(node.data?.paramValidators || {}) },
-              lockedParams: template
-                ? [...(template.lockedParams || [])]
-                : [...(node.data?.lockedParams || [])],
-            },
-          };
-        });
-
-        setNodes(normalizedNodes);
-        setEdges(graph.edges.map(normalizeEdgeForCanvas));
-        setSelectedNodeId(null);
-        setSelectedEdgeId(null);
-
+        normalizeGraphForCanvas(graph);
         alert("Import completed.");
       } catch (error) {
         console.error(error);
-        alert("Invalid JSON file.");
+        alert(error.message || "Invalid JSON file.");
       }
     };
 
     reader.readAsText(file);
-
     event.target.value = "";
   };
+
+  const openNodeParameters = useCallback((nodeId) => {
+    setSelectedNodeId(nodeId);
+    setSelectedEdgeId(null);
+    setIsNodeParameterModalOpen(true);
+  }, []);
+
+  const saveNodeParameters = useCallback((nodeId, nextParams) => {
+    setNodes((currentNodes) =>
+      currentNodes.map((node) =>
+        node.id === nodeId
+          ? {
+              ...node,
+              data: {
+                ...node.data,
+                params: nextParams,
+              },
+            }
+          : node
+      )
+    );
+  }, []);
+
+  const deleteNode = useCallback((nodeId) => {
+    setNodes((currentNodes) =>
+      currentNodes.filter((node) => node.id !== nodeId)
+    );
+
+    setEdges((currentEdges) =>
+      currentEdges.filter(
+        (edge) =>
+          edge.source !== nodeId &&
+          edge.target !== nodeId
+      )
+    );
+
+    setSelectedNodeId((currentId) =>
+      currentId === nodeId ? null : currentId
+    );
+
+    setIsNodeParameterModalOpen(false);
+  }, []);
 
   const onNodesChange = useCallback((changes) => {
     setNodes((currentNodes) => applyNodeChanges(changes, currentNodes));
@@ -459,6 +578,19 @@ export default function App() {
     ? selectedNode.data.paramOrder || Object.keys(selectedNode.data.params || {})
     : [];
 
+  const visibleNodes = useMemo(
+    () =>
+      nodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          onOpenParameters: openNodeParameters,
+          onDeleteNode: deleteNode,
+        },
+      })),
+    [nodes, openNodeParameters, deleteNode]
+  );
+
   const visibleEdges = useMemo(
     () =>
       edges.map((edge) => ({
@@ -475,40 +607,8 @@ export default function App() {
         height: "100vh", margin: 0, padding: 0, textAlign: "left",
       }}
     >
-      <Sidebar
-        selectedTemplateKey={selectedTemplateKey}
-        setSelectedTemplateKey={setSelectedTemplateKey}
-        addPredefinedNode={addPredefinedNode}
-        exportJson={exportJson}
-        importJson={importJson}
-        selectedEdge={selectedEdge}
-        selectedNode={selectedNode}
-        deleteSelectedEdge={deleteSelectedEdge}
-        deleteSelectedNode={deleteSelectedNode}
-        updateNodeLabel={updateNodeLabel}
-        newParamName={newParamName}
-        setNewParamName={setNewParamName}
-        newParamType={newParamType}
-        setNewParamType={setNewParamType}
-        newParamValue={newParamValue}
-        setNewParamValue={setNewParamValue}
-        addParameter={addParameter}
-        selectedParamOrder={selectedParamOrder}
-        inferParamType={inferParamType}
-        editingParamKey={editingParamKey}
-        editingParamType={editingParamType}
-        setEditingParamType={setEditingParamType}
-        editingParamValue={editingParamValue}
-        setEditingParamValue={setEditingParamValue}
-        saveEditedParameter={saveEditedParameter}
-        setEditingParamKey={setEditingParamKey}
-        moveParameter={moveParameter}
-        startEditingParameter={startEditingParameter}
-        removeParameter={removeParameter}
-        updatePortCount={updatePortCount}
-      />
       <GraphCanvas
-        nodes={nodes}
+        nodes={visibleNodes}
         edges={visibleEdges}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
@@ -516,9 +616,23 @@ export default function App() {
         onConnect={onConnect}
         setSelectedNodeId={setSelectedNodeId}
         setSelectedEdgeId={setSelectedEdgeId}
+        selectedTemplateKey={selectedTemplateKey}
+        setSelectedTemplateKey={setSelectedTemplateKey}
+        addPredefinedNode={addPredefinedNode}
+        importJson={importJson}
+        exportJson={exportJson}
         runWorkflow={runWorkflow}
         isRunning={isRunning}
         runMessage={runMessage}
+        onLoadWorkflowGraph={loadWorkflowGraph}
+        onSaveWorkflow={saveWorkflow}
+      />
+
+      <NodeParameterModal
+        isOpen={isNodeParameterModalOpen}
+        node={selectedNode}
+        onClose={() => setIsNodeParameterModalOpen(false)}
+        onSave={saveNodeParameters}
       />
     </div>
   );
