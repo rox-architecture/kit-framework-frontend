@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getExecutions } from "../services/workflowApi";
+import { getExecutions } from "../services/backendApi";
 
 const formatTimestamp = (value) => {
   if (!value) return "—";

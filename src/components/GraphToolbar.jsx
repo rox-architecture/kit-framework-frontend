@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import PredefinedNodeModal from "./PredefinedNodeModal";
+import AddNodeModal from "./AddNodeModal";
 import LoadWorkflowModal from "./LoadWorkflowModal";
 import SaveWorkflowModal from "./SaveWorkflowModal";
 import ExecutionManagerModal from "./ExecutionManagerModal";
@@ -27,7 +27,7 @@ const disabledButtonStyle = {
 export default function GraphToolbar({
   selectedTemplateKey,
   setSelectedTemplateKey,
-  addPredefinedNode,
+  addNodeFromTemplate,
   importJson,
   exportJson,
   runWorkflow,
@@ -36,7 +36,7 @@ export default function GraphToolbar({
   onLoadWorkflowGraph,
   onSaveWorkflow,
 }) {
-  const [isPredefinedNodeModalOpen, setIsPredefinedNodeModalOpen] = useState(false);
+  const [isAddNodeModalOpen, setIsAddNodeModalOpen] = useState(false);
   const [isLoadWorkflowModalOpen, setIsLoadWorkflowModalOpen] = useState(false);
   const [isSaveWorkflowModalOpen, setIsSaveWorkflowModalOpen] = useState(false);
   const [isExecutionManagerModalOpen, setIsExecutionManagerModalOpen] = useState(false);
@@ -67,7 +67,7 @@ export default function GraphToolbar({
         >
           <button
             type="button"
-            onClick={() => setIsPredefinedNodeModalOpen(true)}
+            onClick={() => setIsAddNodeModalOpen(true)}
             style={buttonStyle}
           >
             Add Node
@@ -172,12 +172,12 @@ export default function GraphToolbar({
         onClose={() => setIsExecutionManagerModalOpen(false)}
       />
 
-      <PredefinedNodeModal
-        isOpen={isPredefinedNodeModalOpen}
-        onClose={() => setIsPredefinedNodeModalOpen(false)}
+      <AddNodeModal
+        isOpen={isAddNodeModalOpen}
+        onClose={() => setIsAddNodeModalOpen(false)}
         selectedTemplateKey={selectedTemplateKey}
         setSelectedTemplateKey={setSelectedTemplateKey}
-        addPredefinedNode={addPredefinedNode}
+        addNodeFromTemplate={addNodeFromTemplate}
       />
     </>
   );

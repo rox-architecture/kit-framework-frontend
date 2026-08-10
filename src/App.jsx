@@ -5,11 +5,11 @@ import "@xyflow/react/dist/style.css";
 import CustomNode from "./components/CustomNode";
 import GraphCanvas from "./components/GraphCanvas";
 import NodeParameterModal from "./components/NodeParameterModal";
-import PREDEFINED_NODE_TEMPLATES from "./templates";
+import NODE_TEMPLATES from "./config/nodeTemplates";
 import { normalizeEdgeForCanvas, serializeGraph } from "./utils/graph";
 import { migrateGraph, getBaseNodeType } from "./utils/graphMigration";
 import { formatParamValue, getParamOrder, inferParamType, parseParamValue } from "./utils/params";
-import { createWorkflow, requestWorkflowExecution } from "./services/workflowApi";
+import { createWorkflow, requestWorkflowExecution } from "./services/backendApi";
 
 export default function App() {
   const [nodes, setNodes] = useState([]);
@@ -36,12 +36,12 @@ export default function App() {
     y: 100 + currentNodes.length * 30,
   });
 
-  const addPredefinedNode = (
+  const addNodeFromTemplate = (
     templateKey = selectedTemplateKey,
     paramOverrides = {},
     labelOverride = null
   ) => {
-    const template = PREDEFINED_NODE_TEMPLATES[templateKey];
+    const template = NODE_TEMPLATES[templateKey];
     if (!template) return;
 
     const id = `${templateKey}-${Date.now()}`;
@@ -55,7 +55,7 @@ export default function App() {
         data: {
           label: labelOverride || template.label,
           templateKey,
-          isPredefined: true,
+          isTemplateNode: true,
           params: {
             ...template.params,
             ...paramOverrides,
@@ -400,7 +400,7 @@ export default function App() {
       );
 
       const template =
-        PREDEFINED_NODE_TEMPLATES[
+        NODE_TEMPLATES[
           templateKey
         ] || null;
 
@@ -618,7 +618,7 @@ export default function App() {
         setSelectedEdgeId={setSelectedEdgeId}
         selectedTemplateKey={selectedTemplateKey}
         setSelectedTemplateKey={setSelectedTemplateKey}
-        addPredefinedNode={addPredefinedNode}
+        addNodeFromTemplate={addNodeFromTemplate}
         importJson={importJson}
         exportJson={exportJson}
         runWorkflow={runWorkflow}

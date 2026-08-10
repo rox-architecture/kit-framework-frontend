@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { deleteWorkflow, getAllWorkflows } from "../services/workflowApi";
+import { deleteWorkflow, getAllWorkflows } from "../services/backendApi";
 
 export default function LoadWorkflowModal({ isOpen, onClose, onLoad }) {
   const [workflows, setWorkflows] = useState([]);

@@ -12,7 +12,7 @@ export default function GraphCanvas({
   setSelectedEdgeId,
   selectedTemplateKey,
   setSelectedTemplateKey,
-  addPredefinedNode,
+  addNodeFromTemplate,
   importJson,
   exportJson,
   runWorkflow,
@@ -26,7 +26,7 @@ export default function GraphCanvas({
       <GraphToolbar
         selectedTemplateKey={selectedTemplateKey}
         setSelectedTemplateKey={setSelectedTemplateKey}
-        addPredefinedNode={addPredefinedNode}
+        addNodeFromTemplate={addNodeFromTemplate}
         importJson={importJson}
         exportJson={exportJson}
         runWorkflow={runWorkflow}

@@ -1,0 +1,237 @@
+/* src/components/AddNodeModal.css */
+
+/*
+ * Component-scoped stylesheet for AddNodeModal.
+ *
+ * Dynamic values that come from React state remain inline in JSX:
+ * - modal width / height / position
+ * - left/right pane ratio
+ * - asset-type-specific colors
+ * - formatted-view toggle position/color
+ */
+
+.anm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.anm-modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+.anm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  padding: 16px 20px;
+  border-bottom: 1px solid #ddd;
+  cursor: move;
+  user-select: none;
+}
+
+.anm-split-container {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.anm-library-pane {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 16px;
+  background: #f7f7f7;
+}
+
+.anm-metadata-pane {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.anm-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.anm-library-scroll,
+.anm-metadata-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.anm-library-scroll {
+  padding-right: 4px;
+}
+
+.anm-metadata-scroll {
+  box-sizing: border-box;
+  padding: 20px;
+}
+
+.anm-collapsible-section {
+  border-top: 1px solid #d7d7d7;
+}
+
+.anm-collapsible-section--nested {
+  margin-left: 10px;
+}
+
+.anm-collapsible-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-weight: 700;
+}
+
+.anm-collapsible-button--nested {
+  padding: 9px 8px;
+  font-weight: 600;
+}
+
+.anm-node-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  align-content: start;
+  gap: 12px;
+}
+
+.anm-general-node {
+  min-height: 92px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  color: #222;
+}
+
+.anm-general-node--selected {
+  border: 2px solid #333;
+  background: #ececec;
+}
+
+.anm-node-title {
+  display: block;
+  font-size: 14px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.anm-metadata-box {
+  padding: 14px;
+  border: 1px solid #e1e1e1;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.anm-metadata-box-title {
+  margin: 0 0 10px;
+  color: #333;
+  font-size: 13px;
+}
+
+.anm-metadata-row {
+  display: grid;
+  grid-template-columns: 105px minmax(0, 1fr);
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid #ececec;
+}
+
+.anm-metadata-row-label {
+  color: #666;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.anm-metadata-row-value {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.anm-metadata-value {
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.anm-empty-value {
+  color: #888;
+  font-size: 13px;
+  font-style: italic;
+}
+
+.anm-pre {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.anm-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.anm-footer {
+  flex: 0 0 auto;
+  padding: 16px;
+  border-top: 1px solid #ddd;
+  background: #fafafa;
+}
+
+.anm-dataspace-node { min-height:104px; padding:12px; position:relative; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; text-align:left; border-radius:8px; cursor:pointer; }
+.anm-agreement-badge { position:absolute; top:8px; right:8px; width:26px; height:26px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; }
+.anm-type-badge { display:inline-flex; align-items:center; gap:6px; margin-bottom:10px; padding:3px 8px; border-radius:999px; font-size:11px; font-weight:700; }
+.anm-muted { color:#666; }
+.anm-error { color:#b00020; }
+.anm-indented { margin-left:8px; font-size:13px; }
+.anm-metadata-heading { margin-top:0; margin-bottom:10px; }
+.anm-format-toggle-row { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #e5e5e5; font-size:12px; font-weight:600; color:#555; }
+.anm-toggle { width:46px; height:24px; position:relative; padding:0; border:0; border-radius:999px; background:#b8b8b8; cursor:pointer; }
+.anm-toggle--on { background:#2563eb; }
+.anm-toggle span { position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:white; box-shadow:0 1px 3px rgba(0,0,0,.3); transition:left 120ms ease; }
+.anm-toggle--on span { left:25px; }
+.anm-requirement-item { padding:8px 10px; border:1px solid #e5e5e5; border-radius:6px; background:white; margin-bottom:6px; }
+.anm-splitter { width:8px; flex:0 0 8px; cursor:col-resize; background:#e5e5e5; }
+.anm-status { margin-bottom:10px; padding:9px 10px; border:1px solid #dbeafe; border-radius:6px; background:#eff6ff; color:#1e3a8a; font-size:12px; line-height:1.4; }
+.anm-primary-action { width:100%; padding:10px 14px; font-weight:600; }
+.anm-resize-handle { position:absolute; right:0; bottom:0; width:18px; height:18px; cursor:nwse-resize; background:linear-gradient(135deg, transparent 45%, #999 46%, #999 55%, transparent 56%); }
