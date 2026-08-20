@@ -1,14 +1,25 @@
 # Workflow Frontend
 
-## Install 
+## Run
+
+```
+docker pull ghcr.io/rox-architecture/kit-frontend:latest
+docker run -d --name kit-frontend -p 8088:80 kit-frontend:latest
+```
+
+## Pre-built image registry 
+
+https://github.com/orgs/rox-architecture/packages?repo_name=kit-framework-frontend
+
+## For Development
+
+### Local run
 
 Installation requires `npm` version > 10.
 
 ```
 npm install
 ```
-
-## Run (only for dev)
 
 ```
 npm run dev
@@ -17,17 +28,13 @@ npm run dev
 ## Container Build
 
 ```
-docker build -t kit-framework-frontend:local .
+docker build -t kit-framework-frontend:latest .
 ```
 
 Then run,
 ```
-docker run -d --name kit-framework-frontend -p 8088:80 kit-framework-frontend:local
+docker run -d --name kit-framework-frontend -p 8088:80 kit-framework-frontend:latest
 ```
-
-## Pre-built image registry 
-
-https://github.com/orgs/rox-architecture/packages?repo_name=kit-framework-frontend
 
 ## Funding
 
