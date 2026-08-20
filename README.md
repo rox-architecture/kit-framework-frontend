@@ -25,6 +25,10 @@ Then run,
 docker run -d --name kit-framework-frontend -p 8088:80 kit-framework-frontend:local
 ```
 
+## Pre-built image registry 
+
+https://github.com/orgs/rox-architecture/packages?repo_name=kit-framework-frontend
+
 ## Funding
 
 This open-source project was developed within the *[ROX](https://www.project-rox.ai/en/)* project. 
