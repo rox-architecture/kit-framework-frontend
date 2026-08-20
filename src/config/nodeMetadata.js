@@ -2,8 +2,6 @@ const NODE_METADATA = {
   zipper: {
     description: {
       name: "Zipper",
-      operational_type: "Utility",
-      contact_email: "",
       description:
         "Compresses a target directory into a ZIP archive.",
     },
@@ -97,7 +95,8 @@ const NODE_METADATA = {
     },
   },
 
-  
+
+
 };
 
 export default NODE_METADATA;

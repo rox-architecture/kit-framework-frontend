@@ -3,6 +3,7 @@ import AddNodeModal from "./AddNodeModal";
 import LoadWorkflowModal from "./LoadWorkflowModal";
 import SaveWorkflowModal from "./SaveWorkflowModal";
 import ExecutionManagerModal from "./ExecutionManagerModal";
+import WorkflowRequirementsModal from "./WorkflowRequirementsModal";
 
 const buttonStyle = {
   height: 38,
@@ -35,11 +36,13 @@ export default function GraphToolbar({
   runMessage,
   onLoadWorkflowGraph,
   onSaveWorkflow,
+  nodes,
 }) {
   const [isAddNodeModalOpen, setIsAddNodeModalOpen] = useState(false);
   const [isLoadWorkflowModalOpen, setIsLoadWorkflowModalOpen] = useState(false);
   const [isSaveWorkflowModalOpen, setIsSaveWorkflowModalOpen] = useState(false);
   const [isExecutionManagerModalOpen, setIsExecutionManagerModalOpen] = useState(false);
+  const [isWorkflowRequirementsModalOpen, setIsWorkflowRequirementsModalOpen] = useState(false);
   const importInputRef = useRef(null);
 
   return (
@@ -109,7 +112,15 @@ export default function GraphToolbar({
             Execution Manager
           </button>
 
-          <button type="button" disabled style={disabledButtonStyle}>
+          <button
+            type="button"
+            onClick={() =>
+              setIsWorkflowRequirementsModalOpen(
+                true
+              )
+            }
+            style={buttonStyle}
+          >
             Workflow Requirements
           </button>
 
@@ -170,6 +181,18 @@ export default function GraphToolbar({
       <ExecutionManagerModal
         isOpen={isExecutionManagerModalOpen}
         onClose={() => setIsExecutionManagerModalOpen(false)}
+      />
+
+      <WorkflowRequirementsModal
+        isOpen={
+          isWorkflowRequirementsModalOpen
+        }
+        onClose={() =>
+          setIsWorkflowRequirementsModalOpen(
+            false
+          )
+        }
+        nodes={nodes}
       />
 
       <AddNodeModal

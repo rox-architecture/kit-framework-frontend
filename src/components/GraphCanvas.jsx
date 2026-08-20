@@ -24,6 +24,7 @@ export default function GraphCanvas({
   return (
     <main style={{ flex: 1, minWidth: 0, position: "relative" }}>
       <GraphToolbar
+        nodes={nodes}
         selectedTemplateKey={selectedTemplateKey}
         setSelectedTemplateKey={setSelectedTemplateKey}
         addNodeFromTemplate={addNodeFromTemplate}

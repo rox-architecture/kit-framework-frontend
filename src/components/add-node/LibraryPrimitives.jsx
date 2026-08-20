@@ -4,7 +4,9 @@ import staticFileIcon from "../../assets/node-icons/static_file.svg";
 import containerIcon from "../../assets/node-icons/container.svg";
 import fileServiceIcon from "../../assets/node-icons/service_file.svg";
 import streamingServiceIcon from "../../assets/node-icons/service_streaming.svg";
+import workflowIcon from "../../assets/node-icons/workflow.svg";
 import defaultIcon from "../../assets/node-icons/default.svg";
+import handshakeIcon from "../../assets/handshake.svg";
 
 const ASSET_TYPE_UI = {
   [ASSET_TYPES.STATIC_FILE]: {
@@ -28,7 +30,7 @@ const ASSET_TYPE_UI = {
     badgeColor: "#cffafe",
   },
   [ASSET_TYPES.WORKFLOW]: {
-    icon: defaultIcon,
+    icon: workflowIcon,
     color: "#059669",
     badgeColor: "#d1fae5",
   },
@@ -163,15 +165,16 @@ export function NodeBlock({
             border: "1px solid #bbf7d0",
           }}
         >
-          <span
+          <img
+            src={handshakeIcon}
+            alt=""
             aria-hidden="true"
             style={{
-              fontSize: 14,
-              lineHeight: 1,
+              width: 16,
+              height: 16,
+              objectFit: "contain",
             }}
-          >
-            ✓
-          </span>
+          />
         </div>
       )}
 

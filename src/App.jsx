@@ -39,7 +39,11 @@ export default function App() {
   const addNodeFromTemplate = (
     templateKey = selectedTemplateKey,
     paramOverrides = {},
-    labelOverride = null
+    labelOverride = null,
+    requirementsOverride = {
+      hardware: [],
+      software: [],
+    }
   ) => {
     const template = NODE_TEMPLATES[templateKey];
     if (!template) return;
@@ -68,6 +72,26 @@ export default function App() {
           lockedParams: [...(template.lockedParams || [])],
           inputCount: template.inputCount,
           outputCount: template.outputCount,
+
+          // Workflow-level editable metadata.
+          // Requirements are intentionally separate
+          // from executable node params.
+          requirements: {
+            hardware: Array.isArray(
+              requirementsOverride?.hardware
+            )
+              ? requirementsOverride.hardware.map(
+                  (item) => ({ ...item })
+                )
+              : [],
+            software: Array.isArray(
+              requirementsOverride?.software
+            )
+              ? requirementsOverride.software.map(
+                  (item) => ({ ...item })
+                )
+              : [],
+          },
         },
       },
     ]);
@@ -512,21 +536,67 @@ export default function App() {
     setIsNodeParameterModalOpen(true);
   }, []);
 
-  const saveNodeParameters = useCallback((nodeId, nextParams) => {
-    setNodes((currentNodes) =>
-      currentNodes.map((node) =>
-        node.id === nodeId
-          ? {
-              ...node,
-              data: {
-                ...node.data,
-                params: nextParams,
-              },
-            }
-          : node
-      )
-    );
-  }, []);
+  const saveNodeParameters = useCallback(
+    (
+      nodeId,
+      nextParams,
+      nextRequirements
+    ) => {
+      setNodes((currentNodes) =>
+        currentNodes.map((node) =>
+          node.id === nodeId
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  params: nextParams,
+                  requirements: {
+                    hardware: Array.isArray(
+                      nextRequirements?.hardware
+                    )
+                      ? nextRequirements.hardware.map(
+                          (item) => ({
+                            ...item,
+                          })
+                        )
+                      : [],
+                    software: Array.isArray(
+                      nextRequirements?.software
+                    )
+                      ? nextRequirements.software.map(
+                          (item) => ({
+                            ...item,
+                          })
+                        )
+                      : [],
+                  },
+                },
+              }
+            : node
+        )
+      );
+    },
+    []
+  );
+
+  const updateMachineTag = useCallback(
+    (nodeId, machineTag) => {
+      setNodes((currentNodes) =>
+        currentNodes.map((node) =>
+          node.id === nodeId
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  machineTag,
+                },
+              }
+            : node
+        )
+      );
+    },
+    []
+  );
 
   const deleteNode = useCallback((nodeId) => {
     setNodes((currentNodes) =>
@@ -586,9 +656,15 @@ export default function App() {
           ...node.data,
           onOpenParameters: openNodeParameters,
           onDeleteNode: deleteNode,
+          onUpdateMachineTag: updateMachineTag,
         },
       })),
-    [nodes, openNodeParameters, deleteNode]
+    [
+      nodes,
+      openNodeParameters,
+      deleteNode,
+      updateMachineTag,
+    ]
   );
 
   const visibleEdges = useMemo(

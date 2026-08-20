@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Handle, Position, useUpdateNodeInternals } from "@xyflow/react";
 
 import {
@@ -31,6 +31,23 @@ export default function CustomNode({ id, data }) {
 
   const nodeType = data.params?.type || "";
   const nodeIcon = getNodeIcon(nodeType);
+
+  const [isEditingMachineTag, setIsEditingMachineTag] =
+    useState(false);
+
+  const [machineTagDraft, setMachineTagDraft] =
+    useState(data.machineTag || "");
+
+  const saveMachineTag = () => {
+    const nextMachineTag = machineTagDraft.trim();
+
+    data.onUpdateMachineTag?.(
+      id,
+      nextMachineTag
+    );
+
+    setIsEditingMachineTag(false);
+  };
 
   useEffect(() => {
     updateNodeInternals(id);
@@ -133,48 +150,149 @@ export default function CustomNode({ id, data }) {
         />
       </div>
 
-      {/* Small node action buttons below the node */}
+      {/* Machine tag + node action buttons below the node */}
       <div
         className="nodrag nopan"
         style={{
           position: "absolute",
-          left: "50%",
+          left: 0,
+          right: 0,
           top: "calc(100% + 6px)",
-          transform: "translateX(-50%)",
           display: "flex",
-          gap: 5,
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 6,
           zIndex: 5,
         }}
       >
-        <button
-          type="button"
-          title="Edit node parameters"
-          onMouseDown={(event) => {
-            event.stopPropagation();
-          }}
-          onClick={(event) => {
-            event.stopPropagation();
-            data.onOpenParameters?.(id);
-          }}
-          style={actionButtonStyle}
-        >
-          ⚙
-        </button>
+        {/* Machine tag */}
+        {isEditingMachineTag ? (
+          <input
+            autoFocus
+            type="text"
+            value={machineTagDraft}
+            placeholder="machine"
+            title="Machine tag"
+            onMouseDown={(event) => {
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+            onChange={(event) => {
+              setMachineTagDraft(
+                event.target.value
+              );
+            }}
+            onBlur={saveMachineTag}
+            onKeyDown={(event) => {
+              event.stopPropagation();
 
-        <button
-          type="button"
-          title="Delete node"
-          onMouseDown={(event) => {
-            event.stopPropagation();
+              if (event.key === "Enter") {
+                event.currentTarget.blur();
+              }
+
+              if (event.key === "Escape") {
+                setMachineTagDraft(
+                  data.machineTag || ""
+                );
+                setIsEditingMachineTag(false);
+              }
+            }}
+            style={{
+              width: 96,
+              height: 24,
+              boxSizing: "border-box",
+              padding: "0 8px",
+              border: "1px solid #999",
+              borderRadius: 12,
+              background: "white",
+              color: "#333",
+              fontSize: 11,
+              outline: "none",
+            }}
+          />
+        ) : (
+          <button
+            type="button"
+            title={
+              data.machineTag
+                ? `Machine: ${data.machineTag}`
+                : "Set machine tag"
+            }
+            onMouseDown={(event) => {
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+
+              setMachineTagDraft(
+                data.machineTag || ""
+              );
+
+              setIsEditingMachineTag(true);
+            }}
+            style={{
+              maxWidth: 105,
+              height: 24,
+              padding: "0 9px",
+              border: "1px solid #bbb",
+              borderRadius: 12,
+              background: "white",
+              color: data.machineTag
+                ? "#333"
+                : "#777",
+              fontSize: 11,
+              cursor: "pointer",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              boxShadow:
+                "0 1px 3px rgba(0, 0, 0, 0.08)",
+            }}
+          >
+            {data.machineTag || "+ machine"}
+          </button>
+        )}
+
+        {/* Node actions */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
           }}
-          onClick={(event) => {
-            event.stopPropagation();
-            data.onDeleteNode?.(id);
-          }}
-          style={actionButtonStyle}
         >
-          🗑
-        </button>
+          <button
+            type="button"
+            title="Edit node parameters"
+            onMouseDown={(event) => {
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              data.onOpenParameters?.(id);
+            }}
+            style={actionButtonStyle}
+          >
+            ⚙
+          </button>
+
+          <button
+            type="button"
+            title="Delete node"
+            onMouseDown={(event) => {
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              data.onDeleteNode?.(id);
+            }}
+            style={actionButtonStyle}
+          >
+            🗑
+          </button>
+        </div>
       </div>
 
       {/* Output ports + names */}

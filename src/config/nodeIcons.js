@@ -5,7 +5,7 @@ import unzipperIcon from "../assets/node-icons/unzipper.svg";
 import saveToFileIcon from "../assets/node-icons/save_to_file.svg";
 import containerDeploymentKubernetesIcon from "../assets/node-icons/deploy_kubernetes.svg";
 import sendToURLIcon from "../assets/node-icons/send_to_url.svg";
-
+import bashCmdIcon from "../assets/node-icons/bash_cmd.svg";
 
 const NODE_ICONS = {
   static_file: staticFileIcon,
@@ -15,6 +15,7 @@ const NODE_ICONS = {
   save_to_file: saveToFileIcon,
   container_deployment_kubernetes: containerDeploymentKubernetesIcon,
   send_to_url: sendToURLIcon,
+  bash_command: bashCmdIcon,
 };
 
 export function getNodeIcon(nodeType) {

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { getAssetType } from "../../utils/nodeTypes";
 import { CollapsibleSection, NodeBlock, NodeGrid } from "./LibraryPrimitives";
 
-export default function DataspaceNodeLibrary({ title, isOpen, onToggle, catalogs, agreements, loading, error, searchText, openParticipants, onToggleParticipant, selectedItem, onSelect, emptyMessage }) {
+export default function DataspaceNodeLibrary({ title, dataspaceKey, isOpen, onToggle, catalogs, agreements, loading, error, searchText, openParticipants, onToggleParticipant, selectedItem, onSelect, emptyMessage }) {
   const agreementKeys = useMemo(() => new Set(agreements.map((a) => `${a?.providerId}::${a?.assetId}`)), [agreements]);
   const normalized = searchText.trim().toLowerCase();
 
@@ -37,7 +37,14 @@ export default function DataspaceNodeLibrary({ title, isOpen, onToggle, catalogs
                 return <NodeBlock key={`${participantId}-${id}`}
                   title={dataset?.name || dataset?.title || dataset?.filename || id}
                   assetType={getAssetType(dataset)} hasAgreement={hasAgreement(dataset, participantId)} selected={selected}
-                  onClick={() => onSelect(catalog, dataset, hasAgreement(dataset, participantId))} />;
+                  onClick={() =>
+                    onSelect(
+                      catalog,
+                      dataset,
+                      hasAgreement(dataset, participantId),
+                      dataspaceKey
+                    )
+                  } />;
               })}
             </NodeGrid>
           )}

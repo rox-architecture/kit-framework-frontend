@@ -662,18 +662,6 @@ function RequirementsSpecification({ metadataRoot }) {
         title="Software"
         requirements={requirements.software}
       />
-
-      <div
-        style={{
-          height: 1,
-          background: "#e5e5e5",
-        }}
-      />
-
-      <RequirementList
-        title="Dataspace"
-        requirements={requirements.dataspace}
-      />
     </div>
   );
 }
@@ -723,35 +711,42 @@ export function FormattedMetadata({ metadata }) {
         }}
       >
         <MetadataBox title="Description">
-          <MetadataRow
-            label="Asset Name"
-            value={
-              descriptionRoot.name ||
-              metadata.nodeType
-            }
-          />
+          {(descriptionRoot.name || metadata.nodeType) && (
+            <MetadataRow
+              label="Asset Name"
+              value={
+                descriptionRoot.name ||
+                metadata.nodeType
+              }
+            />
+          )}
 
-          <MetadataRow
-            label="Operational Type"
-            value={
-              descriptionRoot.operational_type ||
-              metadata.nodeType
-            }
-          />
+          {descriptionRoot.operational_type && (
+            <MetadataRow
+              label="Operational Type"
+              value={
+                descriptionRoot.operational_type
+              }
+            />
+          )}
 
-          <MetadataRow
-            label="Contact"
-            value={
-              descriptionRoot.contact_email
-            }
-          />
+          {descriptionRoot.contact_email && (
+            <MetadataRow
+              label="Contact"
+              value={
+                descriptionRoot.contact_email
+              }
+            />
+          )}
 
-          <MetadataRow
-            label="Description"
-            value={
-              descriptionRoot.description
-            }
-          />
+          {descriptionRoot.description && (
+            <MetadataRow
+              label="Description"
+              value={
+                descriptionRoot.description
+              }
+            />
+          )}
         </MetadataBox>
 
         <MetadataBox title="I/O Specification">

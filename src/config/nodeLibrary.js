@@ -11,6 +11,7 @@ export const NODE_LIBRARY = {
           "save_to_file",
           "zipper",
           "unzipper",
+          "bash_command",
         ],
       },
       {

@@ -239,6 +239,45 @@ const NODE_TEMPLATES = {
     },
     lockedParams: ["type"],
   },
+
+  bash_command: {
+    label: "Bash Command",
+    inputCount: 1,
+    outputCount: 1,
+    params: {
+      type: "bash_command",
+      command: [],
+      working_directory: null,
+      timeout: 30.0,
+    },
+    paramOrder: [
+      "type",
+      "command",
+      "working_directory",
+      "timeout",
+    ],
+    paramTypes: {
+      type: "string",
+      command: "array",
+      working_directory: "string",
+      timeout: "number",
+    },
+    paramHelp: {
+      command:
+        "List of arguments. E.g., [ 'python', 'main.py' ] .",
+
+      working_directory:
+        "Directory in which the command will be executed.",
+    },
+    
+    paramValidators: {
+      working_directory: "path",
+    },
+    nullableParams: [
+      "working_directory",
+    ],
+    lockedParams: ["type"],
+  },
 };
 
 export default NODE_TEMPLATES;
