@@ -6,11 +6,18 @@ function getNodeMetadata(nodeType) {
   return NODE_METADATA?.[baseType] || {};
 }
 
+function getLocalKey(key) {
+  return String(key || "")
+    .split(":")
+    .pop();
+}
+
 function getFirstDefined(object, keys) {
   if (!object || typeof object !== "object") {
     return undefined;
   }
 
+  // Prefer exact keys first.
   for (const key of keys) {
     if (Object.prototype.hasOwnProperty.call(object, key)) {
       const value = object[key];
@@ -18,6 +25,23 @@ function getFirstDefined(object, keys) {
       if (value !== undefined && value !== null && value !== "") {
         return value;
       }
+    }
+  }
+
+  // Fallback: ignore namespace prefix, e.g.
+  // rodeos:hardwareRequirements -> hardwareRequirements
+  // dcterms:title -> title
+  for (const wantedKey of keys) {
+    const entry = Object.entries(object).find(
+      ([actualKey, value]) =>
+        getLocalKey(actualKey) === wantedKey &&
+        value !== undefined &&
+        value !== null &&
+        value !== ""
+    );
+
+    if (entry) {
+      return entry[1];
     }
   }
 
@@ -377,6 +401,7 @@ function normalizeRequirementItem(item, fallbackCategory, index) {
       normalizeRequirementCategory(item.category) ||
       fallbackCategory,
     key:
+      item.subject ||
       item.key ||
       item.name ||
       item.requirement ||
@@ -450,7 +475,7 @@ function getRequirements(metadataRoot) {
       "requirements",
       "Requirements",
       "requirement",
-    ]) || {};
+    ]);
 
   const result = {
     hardware: [],
@@ -477,19 +502,62 @@ function getRequirements(metadataRoot) {
     typeof requirementRoot === "object"
   ) {
     result.hardware = normalizeRequirementGroup(
-      requirementRoot.hardware,
+      getFirstDefined(requirementRoot, [
+        "hardware",
+        "hardwareRequirements",
+      ]),
       REQUIREMENT_CATEGORIES.HARDWARE
     );
 
     result.software = normalizeRequirementGroup(
-      requirementRoot.software,
+      getFirstDefined(requirementRoot, [
+        "software",
+        "softwareRequirements",
+      ]),
       REQUIREMENT_CATEGORIES.SOFTWARE
     );
 
     result.dataspace = normalizeRequirementGroup(
-      requirementRoot.dataspace ||
-        requirementRoot.negotiation ||
-        requirementRoot.contract,
+      getFirstDefined(requirementRoot, [
+        "dataspace",
+        "dataspaceRequirements",
+        "negotiation",
+        "contract",
+      ]),
+      REQUIREMENT_CATEGORIES.DATASPACE
+    );
+  }
+
+  // Dataspace catalog metadata can expose requirement arrays directly
+  // at the root, e.g. rodeos:hardwareRequirements.
+  if (result.hardware.length === 0) {
+    result.hardware = normalizeRequirementGroup(
+      getFirstDefined(metadataRoot, [
+        "hardwareRequirements",
+        "hardware",
+      ]),
+      REQUIREMENT_CATEGORIES.HARDWARE
+    );
+  }
+
+  if (result.software.length === 0) {
+    result.software = normalizeRequirementGroup(
+      getFirstDefined(metadataRoot, [
+        "softwareRequirements",
+        "software",
+      ]),
+      REQUIREMENT_CATEGORIES.SOFTWARE
+    );
+  }
+
+  if (result.dataspace.length === 0) {
+    result.dataspace = normalizeRequirementGroup(
+      getFirstDefined(metadataRoot, [
+        "dataspaceRequirements",
+        "dataspace",
+        "negotiation",
+        "contract",
+      ]),
       REQUIREMENT_CATEGORIES.DATASPACE
     );
   }
@@ -599,7 +667,63 @@ function RequirementList({ title, requirements }) {
                     overflowWrap: "anywhere",
                   }}
                 >
-                  {formatRequirementExpression(requirement)}
+                  <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: 6,
+                  }}
+                >
+                  <span
+                    style={{
+                      padding: "3px 8px",
+                      borderRadius: 999,
+                      background: "#eff6ff",
+                      border: "1px solid #bfdbfe",
+                      color: "#1d4ed8",
+                      fontFamily: "monospace",
+                      fontSize: 11,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {requirement.key}
+                  </span>
+
+                  <span
+                    style={{
+                      padding: "3px 7px",
+                      borderRadius: 5,
+                      background: "#f3f4f6",
+                      border: "1px solid #d1d5db",
+                      color: "#374151",
+                      fontFamily: "monospace",
+                      fontSize: 11,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {requirement.operator}
+                  </span>
+
+                  {requirement.value !== undefined &&
+                    requirement.value !== null &&
+                    requirement.value !== true && (
+                      <span
+                        style={{
+                          padding: "3px 8px",
+                          borderRadius: 5,
+                          background: "#f0fdf4",
+                          border: "1px solid #bbf7d0",
+                          color: "#166534",
+                          fontSize: 11,
+                        }}
+                      >
+                        {typeof requirement.value === "object"
+                          ? JSON.stringify(requirement.value)
+                          : String(requirement.value)}
+                      </span>
+                    )}
+                </div>
                 </code>
               </div>
 
@@ -789,6 +913,7 @@ export function FormattedMetadata({ metadata }) {
     "description",
     "Description",
     "dct:description",
+    "dcterms:description",
   ]);
 
   const sourceDetails = {
@@ -853,8 +978,16 @@ export function FormattedMetadata({ metadata }) {
         <MetadataRow
           label="Contact"
           value={
-            dataset.contact_email ||
-            metadata.contact_email
+            getFirstDefined(dataset, [
+              "contact_email",
+              "contactEmail",
+              "contactPoint",
+            ]) ||
+            getFirstDefined(metadata, [
+              "contact_email",
+              "contactEmail",
+              "contactPoint",
+            ])
           }
         />
 

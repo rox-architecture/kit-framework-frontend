@@ -246,38 +246,31 @@ const NODE_TEMPLATES = {
     outputCount: 1,
     params: {
       type: "bash_command",
-      command: [],
-      working_directory: null,
-      timeout: 30.0,
+      command: "",
+      timeout_seconds: null,
     },
     paramOrder: [
       "type",
       "command",
-      "working_directory",
-      "timeout",
+      "timeout_seconds",
     ],
     paramTypes: {
       type: "string",
-      command: "array",
-      working_directory: "string",
-      timeout: "number",
+      command: "string",
+      timeout_seconds: "number",
     },
     paramHelp: {
       command:
-        "List of arguments. E.g., [ 'python', 'main.py' ] .",
-
-      working_directory:
-        "Directory in which the command will be executed.",
-    },
-    
-    paramValidators: {
-      working_directory: "path",
+      "Bash command to execute. E.g., \"echo 'hello' && ls -la\".",
+      timeout_seconds:
+      "Optional command timeout in seconds.",
     },
     nullableParams: [
-      "working_directory",
+     "timeout_seconds",
     ],
     lockedParams: ["type"],
   },
+
 };
 
 export default NODE_TEMPLATES;

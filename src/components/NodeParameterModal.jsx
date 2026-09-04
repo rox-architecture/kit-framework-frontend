@@ -149,6 +149,100 @@ function ParamHelpIcon({ text }) {
   );
 }
 
+
+const getLocalKey = (key) =>
+  String(key || "")
+    .split(":")
+    .pop();
+
+const getNamespacedValue = (
+  object,
+  localName
+) => {
+  if (
+    !object ||
+    typeof object !== "object"
+  ) {
+    return undefined;
+  }
+
+  if (
+    Object.prototype.hasOwnProperty.call(
+      object,
+      localName
+    )
+  ) {
+    return object[localName];
+  }
+
+  const entry = Object.entries(object).find(
+    ([key]) =>
+      getLocalKey(key) === localName
+  );
+
+  return entry?.[1];
+};
+
+const extractNodeRequirements = (node) => {
+  const stored =
+    node?.data?.requirements;
+
+  if (
+    stored &&
+    typeof stored === "object"
+  ) {
+    return {
+      hardware:
+        stored.hardware || [],
+      software:
+        stored.software || [],
+    };
+  }
+
+  const metadata =
+    node?.data?.metadata ||
+    node?.data?.dataset ||
+    node?.data ||
+    {};
+
+  const requirementsRoot =
+    getNamespacedValue(
+      metadata,
+      "requirements"
+    );
+
+  return {
+    hardware:
+      getNamespacedValue(
+        requirementsRoot,
+        "hardware"
+      ) ??
+      getNamespacedValue(
+        requirementsRoot,
+        "hardwareRequirements"
+      ) ??
+      getNamespacedValue(
+        metadata,
+        "hardwareRequirements"
+      ) ??
+      [],
+    software:
+      getNamespacedValue(
+        requirementsRoot,
+        "software"
+      ) ??
+      getNamespacedValue(
+        requirementsRoot,
+        "softwareRequirements"
+      ) ??
+      getNamespacedValue(
+        metadata,
+        "softwareRequirements"
+      ) ??
+      [],
+  };
+};
+
 const REQUIREMENT_OPERATOR_SUGGESTIONS = [
   {
     value: "required",
@@ -649,12 +743,15 @@ export default function NodeParameterModal({
 
     setDraftValues(nextDraft);
 
+    const sourceRequirements =
+      extractNodeRequirements(node);
+
     setDraftRequirements({
       hardware: normalizeRequirementGroup(
-        node.data?.requirements?.hardware
+        sourceRequirements.hardware
       ),
       software: normalizeRequirementGroup(
-        node.data?.requirements?.software
+        sourceRequirements.software
       ),
     });
 

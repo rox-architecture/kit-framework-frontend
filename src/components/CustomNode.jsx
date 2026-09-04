@@ -8,6 +8,7 @@ import {
   getTargetHandleId,
 } from "../utils/ports";
 
+import { getNodeDisplayType } from "../utils/nodeTypes";
 import { getNodeIcon } from "../config/nodeIcons";
 
 const actionButtonStyle = {
@@ -24,6 +25,13 @@ const actionButtonStyle = {
   boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
 };
 
+const NODE_DISPLAY_TYPE_COLORS = {
+  Container: "#7c3aed",
+  File: "#2563eb",
+  Operation: "#16a34a",
+  Connection: "#dc2626",
+};
+
 export default function CustomNode({ id, data }) {
   const inputCount = Math.max(1, Number(data.inputCount) || 1);
   const outputCount = Math.max(1, Number(data.outputCount) || 1);
@@ -31,6 +39,10 @@ export default function CustomNode({ id, data }) {
 
   const nodeType = data.params?.type || "";
   const nodeIcon = getNodeIcon(nodeType);
+
+  const nodeDisplayType = getNodeDisplayType(nodeType);
+  const nodeDisplayTypeColor =
+    NODE_DISPLAY_TYPE_COLORS[nodeDisplayType] || "#666";
 
   const [isEditingMachineTag, setIsEditingMachineTag] =
     useState(false);
@@ -67,6 +79,32 @@ export default function CustomNode({ id, data }) {
         overflow: "visible",
       }}
     >
+      {/* Node display type above the node name */}
+      {nodeDisplayType && (
+        <div
+          style={{
+            position: "absolute",
+            left: "50%",
+            bottom: "calc(100% + 24px)",
+            transform: "translateX(-50%)",
+            width: 220,
+            fontWeight: 700,
+            fontSize: 10,
+            lineHeight: 1,
+            textAlign: "center",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            color: nodeDisplayTypeColor,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            pointerEvents: "none",
+          }}
+        >
+          {nodeDisplayType}
+        </div>
+      )}
+
       {/* Asset/node name above the node */}
       <div
         style={{

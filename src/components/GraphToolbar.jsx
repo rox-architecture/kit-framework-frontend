@@ -4,6 +4,7 @@ import LoadWorkflowModal from "./LoadWorkflowModal";
 import SaveWorkflowModal from "./SaveWorkflowModal";
 import ExecutionManagerModal from "./ExecutionManagerModal";
 import WorkflowRequirementsModal from "./WorkflowRequirementsModal";
+import MonitoringModal from "./MonitoringModal";
 
 const buttonStyle = {
   height: 38,
@@ -18,11 +19,13 @@ const buttonStyle = {
   boxShadow: "0 1px 4px rgba(0, 0, 0, 0.12)",
 };
 
-const disabledButtonStyle = {
+const iconButtonStyle = {
   ...buttonStyle,
-  color: "#999",
-  background: "#f3f3f3",
-  cursor: "not-allowed",
+  width: 38,
+  padding: 0,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
 };
 
 export default function GraphToolbar({
@@ -41,8 +44,14 @@ export default function GraphToolbar({
   const [isAddNodeModalOpen, setIsAddNodeModalOpen] = useState(false);
   const [isLoadWorkflowModalOpen, setIsLoadWorkflowModalOpen] = useState(false);
   const [isSaveWorkflowModalOpen, setIsSaveWorkflowModalOpen] = useState(false);
-  const [isExecutionManagerModalOpen, setIsExecutionManagerModalOpen] = useState(false);
-  const [isWorkflowRequirementsModalOpen, setIsWorkflowRequirementsModalOpen] = useState(false);
+  const [isExecutionManagerModalOpen, setIsExecutionManagerModalOpen] =
+    useState(false);
+  const [
+    isWorkflowRequirementsModalOpen,
+    setIsWorkflowRequirementsModalOpen,
+  ] = useState(false);
+  const [isMonitoringModalOpen, setIsMonitoringModalOpen] = useState(false);
+
   const importInputRef = useRef(null);
 
   return (
@@ -100,7 +109,11 @@ export default function GraphToolbar({
             Import
           </button>
 
-          <button type="button" onClick={exportJson} style={buttonStyle}>
+          <button
+            type="button"
+            onClick={exportJson}
+            style={buttonStyle}
+          >
             Export
           </button>
 
@@ -115,9 +128,7 @@ export default function GraphToolbar({
           <button
             type="button"
             onClick={() =>
-              setIsWorkflowRequirementsModalOpen(
-                true
-              )
+              setIsWorkflowRequirementsModalOpen(true)
             }
             style={buttonStyle}
           >
@@ -128,16 +139,78 @@ export default function GraphToolbar({
             type="button"
             onClick={runWorkflow}
             disabled={isRunning}
-            title="Create and execute workflow"
+            title={isRunning ? "Workflow is running" : "Trigger workflow"}
+            aria-label="Trigger workflow"
             style={{
-              ...buttonStyle,
+              ...iconButtonStyle,
               border: "none",
               background: isRunning ? "#86c98e" : "#22a447",
               color: "white",
               cursor: isRunning ? "not-allowed" : "pointer",
             }}
           >
-            {isRunning ? "Running..." : "Trigger"}
+            {isRunning ? (
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" opacity="0.35" />
+                <path d="M12 3a9 9 0 0 1 9 9" />
+              </svg>
+            ) : (
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsMonitoringModalOpen(true)}
+            title="Monitoring"
+            aria-label="Monitoring"
+            style={{
+              ...iconButtonStyle,
+              border: "none",
+              background: "#6b7280",
+              color: "white",
+            }}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect
+                x="3"
+                y="4"
+                width="18"
+                height="13"
+                rx="2"
+              />
+              <path d="M8 21h8" />
+              <path d="M12 17v4" />
+              <path d="M7 12l3-3 2 2 4-4" />
+            </svg>
           </button>
         </div>
 
@@ -184,15 +257,16 @@ export default function GraphToolbar({
       />
 
       <WorkflowRequirementsModal
-        isOpen={
-          isWorkflowRequirementsModalOpen
-        }
+        isOpen={isWorkflowRequirementsModalOpen}
         onClose={() =>
-          setIsWorkflowRequirementsModalOpen(
-            false
-          )
+          setIsWorkflowRequirementsModalOpen(false)
         }
         nodes={nodes}
+      />
+
+      <MonitoringModal
+        isOpen={isMonitoringModalOpen}
+        onClose={() => setIsMonitoringModalOpen(false)}
       />
 
       <AddNodeModal

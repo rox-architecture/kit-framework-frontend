@@ -20,6 +20,7 @@ export default function GraphCanvas({
   runMessage,
   onLoadWorkflowGraph,
   onSaveWorkflow,
+  onOpenMonitoring,
 }) {
   return (
     <main style={{ flex: 1, minWidth: 0, position: "relative" }}>
@@ -35,6 +36,7 @@ export default function GraphCanvas({
         runMessage={runMessage}
         onLoadWorkflowGraph={onLoadWorkflowGraph}
         onSaveWorkflow={onSaveWorkflow}
+        onOpenMonitoring={onOpenMonitoring}
       />
 
       <ReactFlow

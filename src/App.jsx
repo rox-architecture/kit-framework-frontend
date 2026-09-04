@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { addEdge, applyEdgeChanges, applyNodeChanges } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
@@ -10,6 +10,8 @@ import { normalizeEdgeForCanvas, serializeGraph } from "./utils/graph";
 import { migrateGraph, getBaseNodeType } from "./utils/graphMigration";
 import { formatParamValue, getParamOrder, inferParamType, parseParamValue } from "./utils/params";
 import { createWorkflow, requestWorkflowExecution } from "./services/backendApi";
+
+const WORKSPACE_STORAGE_KEY = "kit-workflow-workspace";
 
 export default function App() {
   const [nodes, setNodes] = useState([]);
@@ -26,6 +28,8 @@ export default function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [runMessage, setRunMessage] = useState("");
   const [isNodeParameterModalOpen, setIsNodeParameterModalOpen] = useState(false);
+  const [isWorkspaceRestored, setIsWorkspaceRestored] = useState(false);
+  const workspaceSaveTimerRef = useRef(null);
 
   const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
   const selectedNode = nodes.find((node) => node.id === selectedNodeId);
@@ -489,6 +493,56 @@ export default function App() {
     setSelectedNodeId(null);
     setSelectedEdgeId(null);
   };
+
+  // Restore the last local workspace after a browser refresh.
+  // This is separate from the explicit backend "Save Workflow" feature.
+  useEffect(() => {
+    try {
+      const savedWorkspace = localStorage.getItem(WORKSPACE_STORAGE_KEY);
+
+      if (savedWorkspace) {
+        const parsedWorkspace = JSON.parse(savedWorkspace);
+        const migratedWorkspace = migrateGraph(parsedWorkspace);
+
+        normalizeGraphForCanvas(migratedWorkspace);
+      }
+    } catch (error) {
+      console.error("Failed to restore local workspace:", error);
+    } finally {
+      setIsWorkspaceRestored(true);
+    }
+  }, []);
+
+  // Automatically persist the current graph locally.
+  // A short debounce avoids writing to localStorage for every tiny drag event.
+  useEffect(() => {
+    if (!isWorkspaceRestored) {
+      return;
+    }
+
+    if (workspaceSaveTimerRef.current) {
+      clearTimeout(workspaceSaveTimerRef.current);
+    }
+
+    workspaceSaveTimerRef.current = setTimeout(() => {
+      try {
+        const graph = serializeGraph(nodes, edges);
+
+        localStorage.setItem(
+          WORKSPACE_STORAGE_KEY,
+          JSON.stringify(graph)
+        );
+      } catch (error) {
+        console.error("Failed to save local workspace:", error);
+      }
+    }, 250);
+
+    return () => {
+      if (workspaceSaveTimerRef.current) {
+        clearTimeout(workspaceSaveTimerRef.current);
+      }
+    };
+  }, [nodes, edges, isWorkspaceRestored]);
 
   const loadWorkflowGraph = (databaseGraph) => {
     try {

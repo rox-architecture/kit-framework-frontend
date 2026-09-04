@@ -15,6 +15,44 @@ const OPERATIONAL_TYPE_MAP = {
   workflow: ASSET_TYPES.WORKFLOW,
 };
 
+const OPERATION_NODE_TYPES = new Set([
+  "save_to_file",
+  "zipper",
+  "unzipper",
+  "bash_command",
+  "container_deployment_kubernetes",
+]);
+
+const NODE_DISPLAY_TYPES = {
+  static_file: "File",
+  container: "Container",
+  file_service: "File",
+  streaming_service: "Connection",
+
+  workflow: null,
+  unknown: null,
+};
+
+export function getNodeDisplayType(type) {
+  if (!type) {
+    return null;
+  }
+
+  // dlr.static_file -> static_file
+  // tsi.container -> container
+  const baseType = String(type)
+    .trim()
+    .toLowerCase()
+    .split(".")
+    .pop();
+
+  if (OPERATION_NODE_TYPES.has(baseType)) {
+    return "Operation";
+  }
+
+  return NODE_DISPLAY_TYPES[baseType] ?? null;
+}
+
 export function getAssetType(dataset) {
   const rawOperationalType = dataset?.operational_type;
   if (typeof rawOperationalType !== "string") return ASSET_TYPES.UNKNOWN;

@@ -1,5 +1,28 @@
 # Workflow Frontend
 
+## Update Log
+
+- Version 1.1
+  - Node in the canvas now shows the node type on the top
+    - FILE / CONTAINER / OPERATION / CONNECTION
+  - Node metadata in the "Add Node" window are updated
+    - Zipper
+    - Unzipper
+    - Bash Command
+    - Deploy Using Kubernetes
+  - Monitoring button added in the top of canvas
+    - Shows the docker logs of backend-api, worker-1,2,3,4
+  - Trigger button image is changed from text to a logo
+  - Bash node parameter is changed
+    - Command is not longer a list of strings. It is just a single String now
+  - Current canvas is not lost when the browser is refreshed
+    - Using the browser localStorage
+    - Any change in the canvas results in the save of the graph as `kit-workflow-workspace`
+    - Refreshing will always loads the temporarily saved graph
+  - RoX TP5 metadata schema is integrated into the frontend to render the nodes and automatically load the node information correctly
+    - Requirements descriptions are loaded correctly
+    - KIT metadata are loaded correctly 
+
 ## Run
 
 ```

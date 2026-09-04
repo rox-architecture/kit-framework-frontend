@@ -12,16 +12,48 @@ import NodeMetadataPanel from "./add-node/NodeMetadataPanel";
 
 
 const REQUIREMENT_OPERATOR_MAP = {
-  exists: "requires",
-  requires: "requires",
+  exists: "required",
+  requires: "required",
+  required: "required",
   equals: "=",
   "=": "=",
   min: ">=",
   ">=": ">=",
   max: "<=",
   "<=": "<=",
-  in: "in",
+  in: "is any of",
+  "is any of": "is any of",
+  "required for": "required for",
 };
+
+
+function getLocalKey(key) {
+  return String(key || "")
+    .split(":")
+    .pop();
+}
+
+function getNamespacedValue(object, localName) {
+  if (!object || typeof object !== "object") {
+    return undefined;
+  }
+
+  if (
+    Object.prototype.hasOwnProperty.call(
+      object,
+      localName
+    )
+  ) {
+    return object[localName];
+  }
+
+  const entry = Object.entries(object).find(
+    ([key]) =>
+      getLocalKey(key) === localName
+  );
+
+  return entry?.[1];
+}
 
 function stringifyRequirementValue(value) {
   if (value === null || value === undefined) {
@@ -47,7 +79,7 @@ function normalizeRequirementItem(item, fallbackSubject = "") {
   if (typeof item === "string") {
     return {
       subject: fallbackSubject || item,
-      operator: "requires",
+      operator: "required",
       value: "",
     };
   }
@@ -71,14 +103,14 @@ function normalizeRequirementItem(item, fallbackSubject = "") {
   const rawOperator =
     item.operator ??
     item.op ??
-    (item.value === true ? "requires" : "=");
+    (item.value === true ? "required" : "=");
 
   const operator =
     REQUIREMENT_OPERATOR_MAP[rawOperator] ||
     String(rawOperator || "");
 
   const value =
-    operator === "requires" && item.value === true
+    operator === "required" && item.value === true
       ? ""
       : stringifyRequirementValue(item.value);
 
@@ -116,18 +148,76 @@ function normalizeRequirementGroup(group) {
 }
 
 function extractEditableRequirements(metadataRoot) {
-  const root =
-    metadataRoot?.requirements ||
-    metadataRoot?.Requirements ||
-    metadataRoot?.requirement ||
-    {};
+  if (
+    !metadataRoot ||
+    typeof metadataRoot !== "object"
+  ) {
+    return {
+      hardware: [],
+      software: [],
+    };
+  }
+
+  const requirementsRoot =
+    getNamespacedValue(
+      metadataRoot,
+      "requirements"
+    ) ||
+    getNamespacedValue(
+      metadataRoot,
+      "Requirements"
+    ) ||
+    getNamespacedValue(
+      metadataRoot,
+      "requirement"
+    );
+
+  const nestedHardware =
+    getNamespacedValue(
+      requirementsRoot,
+      "hardware"
+    ) ??
+    getNamespacedValue(
+      requirementsRoot,
+      "hardwareRequirements"
+    );
+
+  const nestedSoftware =
+    getNamespacedValue(
+      requirementsRoot,
+      "software"
+    ) ??
+    getNamespacedValue(
+      requirementsRoot,
+      "softwareRequirements"
+    );
+
+  const rootHardware =
+    getNamespacedValue(
+      metadataRoot,
+      "hardwareRequirements"
+    ) ??
+    getNamespacedValue(
+      metadataRoot,
+      "hardware"
+    );
+
+  const rootSoftware =
+    getNamespacedValue(
+      metadataRoot,
+      "softwareRequirements"
+    ) ??
+    getNamespacedValue(
+      metadataRoot,
+      "software"
+    );
 
   return {
     hardware: normalizeRequirementGroup(
-      root.hardware
+      nestedHardware ?? rootHardware
     ),
     software: normalizeRequirementGroup(
-      root.software
+      nestedSoftware ?? rootSoftware
     ),
   };
 }
