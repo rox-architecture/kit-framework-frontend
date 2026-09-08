@@ -161,7 +161,9 @@ const NODE_TEMPLATES = {
     paramOptions: {
       representation: [
         "dockerfile",
-        "archive",
+        "source_archive",
+        "docker_archive",
+        "oci_archive",
       ],
       platforms: [
         "linux/amd64",

@@ -2,7 +2,11 @@
 
 ## Update Log
 
-- Version 1.1
+- Version 1.1.1
+  - Multi architecture container image is provided
+    - linux/amd64
+    - linux/arm64
+- Version 1.1.0
   - Node in the canvas now shows the node type on the top
     - FILE / CONTAINER / OPERATION / CONNECTION
   - Node metadata in the "Add Node" window are updated
@@ -48,10 +52,22 @@ npm install
 npm run dev
 ```
 
-## Container Build
+## Container Build and Push
 
+Change the version with the next version.
+```shell
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -t ghcr.io/rox-architecture/kit-frontend:1.1.1 \
+  -t ghcr.io/rox-architecture/kit-frontend:latest \
+  --push \
+  .
 ```
-docker build -t kit-framework-frontend:latest .
+
+Then, check
+```shell
+docker buildx imagetools inspect \
+  ghcr.io/rox-architecture/kit-frontend:latest
 ```
 
 Then run,
