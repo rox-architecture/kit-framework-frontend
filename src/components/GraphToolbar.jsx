@@ -5,6 +5,7 @@ import SaveWorkflowModal from "./SaveWorkflowModal";
 import ExecutionManagerModal from "./ExecutionManagerModal";
 import WorkflowRequirementsModal from "./WorkflowRequirementsModal";
 import MonitoringModal from "./MonitoringModal";
+import ArtifactNavigatorModal from "./ArtifactNavigatorModal";
 
 const buttonStyle = {
   height: 38,
@@ -41,15 +42,12 @@ export default function GraphToolbar({
   onSaveWorkflow,
   nodes,
 }) {
+  const [isArtifactNavigatorOpen, setIsArtifactNavigatorOpen] = useState(false);
   const [isAddNodeModalOpen, setIsAddNodeModalOpen] = useState(false);
   const [isLoadWorkflowModalOpen, setIsLoadWorkflowModalOpen] = useState(false);
   const [isSaveWorkflowModalOpen, setIsSaveWorkflowModalOpen] = useState(false);
-  const [isExecutionManagerModalOpen, setIsExecutionManagerModalOpen] =
-    useState(false);
-  const [
-    isWorkflowRequirementsModalOpen,
-    setIsWorkflowRequirementsModalOpen,
-  ] = useState(false);
+  const [isExecutionManagerModalOpen, setIsExecutionManagerModalOpen] = useState(false);
+  const [isWorkflowRequirementsModalOpen, setIsWorkflowRequirementsModalOpen] = useState(false);
   const [isMonitoringModalOpen, setIsMonitoringModalOpen] = useState(false);
 
   const importInputRef = useRef(null);
@@ -77,61 +75,31 @@ export default function GraphToolbar({
             justifyContent: "flex-end",
           }}
         >
-          <button
-            type="button"
-            onClick={() => setIsAddNodeModalOpen(true)}
-            style={buttonStyle}
-          >
+          <button type="button" onClick={() => setIsAddNodeModalOpen(true)} style={buttonStyle}>
             Add Node
           </button>
 
-          <button
-            type="button"
-            onClick={() => setIsLoadWorkflowModalOpen(true)}
-            style={buttonStyle}
-          >
+          <button type="button" onClick={() => setIsLoadWorkflowModalOpen(true)} style={buttonStyle}>
             Load Workflow
           </button>
 
-          <button
-            type="button"
-            onClick={() => setIsSaveWorkflowModalOpen(true)}
-            style={buttonStyle}
-          >
+          <button type="button" onClick={() => setIsSaveWorkflowModalOpen(true)} style={buttonStyle}>
             Save Workflow
           </button>
 
-          <button
-            type="button"
-            onClick={() => importInputRef.current?.click()}
-            style={buttonStyle}
-          >
+          <button type="button" onClick={() => importInputRef.current?.click()} style={buttonStyle}>
             Import
           </button>
 
-          <button
-            type="button"
-            onClick={exportJson}
-            style={buttonStyle}
-          >
+          <button type="button" onClick={exportJson} style={buttonStyle}>
             Export
           </button>
 
-          <button
-            type="button"
-            onClick={() => setIsExecutionManagerModalOpen(true)}
-            style={buttonStyle}
-          >
+          <button type="button" onClick={() => setIsExecutionManagerModalOpen(true)} style={buttonStyle}>
             Execution Manager
           </button>
 
-          <button
-            type="button"
-            onClick={() =>
-              setIsWorkflowRequirementsModalOpen(true)
-            }
-            style={buttonStyle}
-          >
+          <button type="button" onClick={() => setIsWorkflowRequirementsModalOpen(true)} style={buttonStyle}>
             Workflow Requirements
           </button>
 
@@ -150,28 +118,12 @@ export default function GraphToolbar({
             }}
           >
             {isRunning ? (
-              <svg
-                width="17"
-                height="17"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="9" opacity="0.35" />
                 <path d="M12 3a9 9 0 0 1 9 9" />
               </svg>
             ) : (
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-              >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M8 5v14l11-7z" />
               </svg>
             )}
@@ -189,27 +141,28 @@ export default function GraphToolbar({
               color: "white",
             }}
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <rect
-                x="3"
-                y="4"
-                width="18"
-                height="13"
-                rx="2"
-              />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="13" rx="2" />
               <path d="M8 21h8" />
               <path d="M12 17v4" />
               <path d="M7 12l3-3 2 2 4-4" />
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsArtifactNavigatorOpen(true)}
+            title="Artifacts"
+            aria-label="Artifacts"
+            style={{
+              ...iconButtonStyle,
+              border: "none",
+              background: "#f59e0b",
+              color: "white",
+            }}
+          >
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M3 6h6l2 2h10v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z" />
             </svg>
           </button>
         </div>
@@ -258,9 +211,7 @@ export default function GraphToolbar({
 
       <WorkflowRequirementsModal
         isOpen={isWorkflowRequirementsModalOpen}
-        onClose={() =>
-          setIsWorkflowRequirementsModalOpen(false)
-        }
+        onClose={() => setIsWorkflowRequirementsModalOpen(false)}
         nodes={nodes}
       />
 
@@ -275,6 +226,11 @@ export default function GraphToolbar({
         selectedTemplateKey={selectedTemplateKey}
         setSelectedTemplateKey={setSelectedTemplateKey}
         addNodeFromTemplate={addNodeFromTemplate}
+      />
+
+      <ArtifactNavigatorModal
+        isOpen={isArtifactNavigatorOpen}
+        onClose={() => setIsArtifactNavigatorOpen(false)}
       />
     </>
   );

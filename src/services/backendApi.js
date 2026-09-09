@@ -100,7 +100,32 @@ export async function getExecutions() {
   return readResponse(response, "Loading executions");
 }
 
+export async function getArtifacts(path = "", signal) {
+  const query = new URLSearchParams();
 
+  if (path) {
+    query.set("path", path);
+  }
+
+  const suffix = query.toString()
+    ? `?${query.toString()}`
+    : "";
+
+  const response = await fetch(
+    `${WORKFLOW_API_BASE_URL}/artifacts${suffix}`,
+    {
+      headers: {
+        Accept: "application/json",
+      },
+      signal,
+    }
+  );
+
+  return readResponse(
+    response,
+    "Loading artifacts"
+  );
+}
 // -----------------------------------------------------------------------------
 // Dataspace API — localhost:8000
 // -----------------------------------------------------------------------------

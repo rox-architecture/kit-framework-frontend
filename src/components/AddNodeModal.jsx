@@ -10,218 +10,6 @@ import GeneralNodeLibrary from "./add-node/GeneralNodeLibrary";
 import DataspaceNodeLibrary from "./add-node/DataspaceNodeLibrary";
 import NodeMetadataPanel from "./add-node/NodeMetadataPanel";
 
-
-const REQUIREMENT_OPERATOR_MAP = {
-  exists: "required",
-  requires: "required",
-  required: "required",
-  equals: "=",
-  "=": "=",
-  min: ">=",
-  ">=": ">=",
-  max: "<=",
-  "<=": "<=",
-  in: "is any of",
-  "is any of": "is any of",
-  "required for": "required for",
-};
-
-
-function getLocalKey(key) {
-  return String(key || "")
-    .split(":")
-    .pop();
-}
-
-function getNamespacedValue(object, localName) {
-  if (!object || typeof object !== "object") {
-    return undefined;
-  }
-
-  if (
-    Object.prototype.hasOwnProperty.call(
-      object,
-      localName
-    )
-  ) {
-    return object[localName];
-  }
-
-  const entry = Object.entries(object).find(
-    ([key]) =>
-      getLocalKey(key) === localName
-  );
-
-  return entry?.[1];
-}
-
-function stringifyRequirementValue(value) {
-  if (value === null || value === undefined) {
-    return "";
-  }
-
-  if (typeof value === "string") {
-    return value;
-  }
-
-  if (typeof value === "object") {
-    try {
-      return JSON.stringify(value);
-    } catch {
-      return String(value);
-    }
-  }
-
-  return String(value);
-}
-
-function normalizeRequirementItem(item, fallbackSubject = "") {
-  if (typeof item === "string") {
-    return {
-      subject: fallbackSubject || item,
-      operator: "required",
-      value: "",
-    };
-  }
-
-  if (!item || typeof item !== "object") {
-    return {
-      subject: fallbackSubject,
-      operator: "",
-      value: stringifyRequirementValue(item),
-    };
-  }
-
-  const subject =
-    item.subject ??
-    item.key ??
-    item.namespace ??
-    item.name ??
-    fallbackSubject ??
-    "";
-
-  const rawOperator =
-    item.operator ??
-    item.op ??
-    (item.value === true ? "required" : "=");
-
-  const operator =
-    REQUIREMENT_OPERATOR_MAP[rawOperator] ||
-    String(rawOperator || "");
-
-  const value =
-    operator === "required" && item.value === true
-      ? ""
-      : stringifyRequirementValue(item.value);
-
-  return {
-    subject: String(subject || ""),
-    operator,
-    value,
-  };
-}
-
-function normalizeRequirementGroup(group) {
-  if (!group) {
-    return [];
-  }
-
-  if (Array.isArray(group)) {
-    return group.map((item) =>
-      normalizeRequirementItem(item)
-    );
-  }
-
-  if (typeof group === "object") {
-    return Object.entries(group).map(
-      ([subject, item]) =>
-        normalizeRequirementItem(
-          item,
-          subject
-        )
-    );
-  }
-
-  return [
-    normalizeRequirementItem(group),
-  ];
-}
-
-function extractEditableRequirements(metadataRoot) {
-  if (
-    !metadataRoot ||
-    typeof metadataRoot !== "object"
-  ) {
-    return {
-      hardware: [],
-      software: [],
-    };
-  }
-
-  const requirementsRoot =
-    getNamespacedValue(
-      metadataRoot,
-      "requirements"
-    ) ||
-    getNamespacedValue(
-      metadataRoot,
-      "Requirements"
-    ) ||
-    getNamespacedValue(
-      metadataRoot,
-      "requirement"
-    );
-
-  const nestedHardware =
-    getNamespacedValue(
-      requirementsRoot,
-      "hardware"
-    ) ??
-    getNamespacedValue(
-      requirementsRoot,
-      "hardwareRequirements"
-    );
-
-  const nestedSoftware =
-    getNamespacedValue(
-      requirementsRoot,
-      "software"
-    ) ??
-    getNamespacedValue(
-      requirementsRoot,
-      "softwareRequirements"
-    );
-
-  const rootHardware =
-    getNamespacedValue(
-      metadataRoot,
-      "hardwareRequirements"
-    ) ??
-    getNamespacedValue(
-      metadataRoot,
-      "hardware"
-    );
-
-  const rootSoftware =
-    getNamespacedValue(
-      metadataRoot,
-      "softwareRequirements"
-    ) ??
-    getNamespacedValue(
-      metadataRoot,
-      "software"
-    );
-
-  return {
-    hardware: normalizeRequirementGroup(
-      nestedHardware ?? rootHardware
-    ),
-    software: normalizeRequirementGroup(
-      nestedSoftware ?? rootSoftware
-    ),
-  };
-}
-
 const WORKFLOW_DOWNLOAD_URLS = {
   dlr: "https://vision-x-dataspace.base-x-ecosystem.org/#/home",
   tsi: "https://iam.dih.telekom.com/realms/dih/protocol/openid-connect/auth?client_id=dashboard-ui&redirect_uri=https%3A%2F%2Fportal.dih.telekom.com%2Fdataspaces%2Fdetails%2F5fd05856-d574-4a27-b8fd-fffd8cb5ca75%2FROX-DEV-SPACE&state=c446b626-8877-4a9e-8683-54887c7d9dca&response_mode=fragment&response_type=code&scope=openid&nonce=e9bcd91b-c867-45f1-8cc5-20b62fa9c66f&ui_locales=en",
@@ -344,16 +132,11 @@ export default function AddNodeModal({ isOpen, onClose, selectedTemplateKey, set
         return;
       }
 
-      const requirements =
-        extractEditableRequirements(
-          selectedCatalogItem.dataset
-        );
 
       addNodeFromTemplate(
         cfg.templateKey,
         cfg.params,
-        cfg.label,
-        requirements
+        cfg.label
       );
 
       onClose();
@@ -364,18 +147,10 @@ export default function AddNodeModal({ isOpen, onClose, selectedTemplateKey, set
       return;
     }
 
-    const requirements =
-      extractEditableRequirements(
-        NODE_METADATA?.[
-          selectedTemplateKey
-        ] || {}
-      );
-
     addNodeFromTemplate(
       selectedTemplateKey,
       {},
-      null,
-      requirements
+      null
     );
 
     onClose();

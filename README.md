@@ -2,10 +2,13 @@
 
 ## Update Log
 
-- Version 1.1.1
-  - Multi architecture container image is provided
-    - linux/amd64
-    - linux/arm64
+- Version 1.2.0
+  - Node metadata is accessible from the graph by double-clicking the node
+  - The requirements on the node is no longer modifiable. This means that the requirement will be shown as the dataspace asset metadata.
+  - Top menu buttons for `/artifacts` location nagivation is added. Now, the result of the KIT execution can be inspected directly from the frontend.
+  - **Version 1.2.1**
+    - Bash command node parameter now has textarea for command. It was single line text before.
+
 - Version 1.1.0
   - Node in the canvas now shows the node type on the top
     - FILE / CONTAINER / OPERATION / CONNECTION
@@ -26,6 +29,10 @@
   - RoX TP5 metadata schema is integrated into the frontend to render the nodes and automatically load the node information correctly
     - Requirements descriptions are loaded correctly
     - KIT metadata are loaded correctly 
+  - **Version 1.1.1**
+    - Multi architecture container image is provided
+      - linux/amd64
+      - linux/arm64
 
 ## Run
 

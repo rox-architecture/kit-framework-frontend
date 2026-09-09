@@ -795,10 +795,10 @@ export function FormattedMetadata({ metadata }) {
     return null;
   }
 
-  const category = metadata.category || metadata.source || "General";
-  const isGeneral = category === "General";
-
-  const dataset = metadata.dataset || {};
+  const wrappedDataset = metadata.dataset && typeof metadata.dataset === "object" ? metadata.dataset : null;
+  const isGeneral = metadata.category === "General" || Boolean(metadata.nodeType);
+  const category = isGeneral ? "General" : metadata.category || metadata.source || "Dataspace";
+  const dataset = isGeneral ? {} : wrappedDataset || metadata;
 
   const nodeType = isGeneral
     ? metadata.nodeType

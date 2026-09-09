@@ -43,11 +43,7 @@ export default function App() {
   const addNodeFromTemplate = (
     templateKey = selectedTemplateKey,
     paramOverrides = {},
-    labelOverride = null,
-    requirementsOverride = {
-      hardware: [],
-      software: [],
-    }
+    labelOverride = null
   ) => {
     const template = NODE_TEMPLATES[templateKey];
     if (!template) return;
@@ -76,26 +72,6 @@ export default function App() {
           lockedParams: [...(template.lockedParams || [])],
           inputCount: template.inputCount,
           outputCount: template.outputCount,
-
-          // Workflow-level editable metadata.
-          // Requirements are intentionally separate
-          // from executable node params.
-          requirements: {
-            hardware: Array.isArray(
-              requirementsOverride?.hardware
-            )
-              ? requirementsOverride.hardware.map(
-                  (item) => ({ ...item })
-                )
-              : [],
-            software: Array.isArray(
-              requirementsOverride?.software
-            )
-              ? requirementsOverride.software.map(
-                  (item) => ({ ...item })
-                )
-              : [],
-          },
         },
       },
     ]);
@@ -591,11 +567,7 @@ export default function App() {
   }, []);
 
   const saveNodeParameters = useCallback(
-    (
-      nodeId,
-      nextParams,
-      nextRequirements
-    ) => {
+    (nodeId, nextParams) => {
       setNodes((currentNodes) =>
         currentNodes.map((node) =>
           node.id === nodeId
@@ -604,26 +576,6 @@ export default function App() {
                 data: {
                   ...node.data,
                   params: nextParams,
-                  requirements: {
-                    hardware: Array.isArray(
-                      nextRequirements?.hardware
-                    )
-                      ? nextRequirements.hardware.map(
-                          (item) => ({
-                            ...item,
-                          })
-                        )
-                      : [],
-                    software: Array.isArray(
-                      nextRequirements?.software
-                    )
-                      ? nextRequirements.software.map(
-                          (item) => ({
-                            ...item,
-                          })
-                        )
-                      : [],
-                  },
                 },
               }
             : node
