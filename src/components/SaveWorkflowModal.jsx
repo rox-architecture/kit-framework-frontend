@@ -4,6 +4,7 @@ export default function SaveWorkflowModal({
   isOpen,
   onClose,
   onSave,
+  currentWorkflowName,
 }) {
   const [workflowName, setWorkflowName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -12,10 +13,10 @@ export default function SaveWorkflowModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    setWorkflowName("");
+    setWorkflowName(currentWorkflowName || "Untitled Workflow");
     setIsSaving(false);
     setError("");
-  }, [isOpen]);
+  }, [isOpen, currentWorkflowName]);
 
   if (!isOpen) return null;
 

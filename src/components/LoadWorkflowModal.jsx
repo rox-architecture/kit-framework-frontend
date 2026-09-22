@@ -41,7 +41,15 @@ export default function LoadWorkflowModal({ isOpen, onClose, onLoad }) {
 
   const handleLoad = () => {
     if (!selectedWorkflow?.graph_json) return;
-    onLoad(selectedWorkflow.graph_json);
+
+    onLoad({
+      ...selectedWorkflow.graph_json,
+      workflow_name:
+        selectedWorkflow.workflow_name ||
+        selectedWorkflow.graph_json.workflow_name ||
+        "Untitled Workflow",
+    });
+
     onClose();
   };
 

@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-VERSION=1.2.1
+# Did you also update the version at config/version.js?
+VERSION=1.2.2
 
 docker buildx build \
   --platform linux/amd64,linux/arm64 \

@@ -6,8 +6,19 @@
   - Node metadata is accessible from the graph by double-clicking the node
   - The requirements on the node is no longer modifiable. This means that the requirement will be shown as the dataspace asset metadata.
   - Top menu buttons for `/artifacts` location nagivation is added. Now, the result of the KIT execution can be inspected directly from the frontend.
-  - **Version 1.2.1**
+  - Version 1.2.1
     - Bash command node parameter now has textarea for command. It was single line text before.
+    - Fixed the bug of single requirement entry in the requirement metadata is being rendered incorrectly. Now, a single entry is also rendered correctly.
+  - Version 1.2.2
+    - `/artifacts/` Navigation modal now contains delete all button to delete all the files saved
+    - Triggering an workflow now asks users to give the workflow name. By default, the current workflow name is shown. Triggering with the same name will simply overwrite the existing workflow, meaning that the workflow will be updated. Users can also write a different name, to create another workflow.
+    - The current workflow name is displayed on the top left corner.
+    - New workflow button is created. Clicking it will empty the screen and start a new workflow.
+  - Version 1.2.3
+    - When the graph is saved, the current workflow name still showing untitled is fixed.
+    - The framework version number is added to the graph JSON data.
+    - Typo in the requirement language operator 'requires' is fixed to 'required'.
+    - Requirement specification language contradiction detection part is improved.
 
 - Version 1.1.0
   - Node in the canvas now shows the node type on the top
@@ -29,7 +40,7 @@
   - RoX TP5 metadata schema is integrated into the frontend to render the nodes and automatically load the node information correctly
     - Requirements descriptions are loaded correctly
     - KIT metadata are loaded correctly 
-  - **Version 1.1.1**
+  - Version 1.1.1
     - Multi architecture container image is provided
       - linux/amd64
       - linux/arm64

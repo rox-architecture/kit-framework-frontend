@@ -41,6 +41,7 @@ export default function GraphToolbar({
   onLoadWorkflowGraph,
   onSaveWorkflow,
   nodes,
+  workflowName,
 }) {
   const [isArtifactNavigatorOpen, setIsArtifactNavigatorOpen] = useState(false);
   const [isAddNodeModalOpen, setIsAddNodeModalOpen] = useState(false);
@@ -75,6 +76,45 @@ export default function GraphToolbar({
             justifyContent: "flex-end",
           }}
         >
+          <button
+            type="button"
+            onClick={() => {
+              const confirmed = window.confirm(
+                "Create a new workflow? Unsaved changes will be lost."
+              );
+
+              if (!confirmed) return;
+
+              localStorage.removeItem("kit-workflow-workspace");
+              window.location.reload();
+            }}
+            title="New Workflow"
+            aria-label="New Workflow"
+            style={{
+              ...iconButtonStyle,
+              border: "none",
+              background: "#2563eb",
+              color: "white",
+            }}
+          >
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <path d="M14 2v6h6" />
+              <path d="M12 13v6" />
+              <path d="M9 16h6" />
+            </svg>
+          </button>
+
           <button type="button" onClick={() => setIsAddNodeModalOpen(true)} style={buttonStyle}>
             Add Node
           </button>
@@ -202,6 +242,7 @@ export default function GraphToolbar({
         isOpen={isSaveWorkflowModalOpen}
         onClose={() => setIsSaveWorkflowModalOpen(false)}
         onSave={onSaveWorkflow}
+        currentWorkflowName={workflowName}
       />
 
       <ExecutionManagerModal

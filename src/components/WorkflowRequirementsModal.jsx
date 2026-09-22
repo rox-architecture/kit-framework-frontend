@@ -37,8 +37,13 @@ function getFirstDefined(object, keys) {
 }
 
 function stringifyRequirementValue(value) {
-  if (value === undefined || value === null || value === true) return "";
-  if (typeof value === "string") return value;
+  if (value === undefined || value === null) {
+    return "";
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
 
   if (typeof value === "object") {
     try {
@@ -51,45 +56,27 @@ function stringifyRequirementValue(value) {
   return String(value);
 }
 
-function normalizeRequirementItem(item, fallbackSubject = "", index = 0) {
-  if (typeof item === "string") {
-    return {
-      subject: fallbackSubject || item,
-      operator: "requires",
-      value: "",
-    };
-  }
 
+function normalizeRequirementItem(item) {
   if (!item || typeof item !== "object") {
-    return {
-      subject: fallbackSubject || `requirement_${index + 1}`,
-      operator: "=",
-      value: stringifyRequirementValue(item),
-    };
+    return null;
   }
-
-  const subject = item.subject || item.key || item.name || item.requirement || fallbackSubject || `requirement_${index + 1}`;
-  const operator = item.operator || item.op || item.comparator || (item.value === true ? "requires" : "=");
 
   return {
-    subject: String(subject),
-    operator: String(operator),
+    subject: item.subject ?? "",
+    operator: item.operator ?? "",
     value: stringifyRequirementValue(item.value),
   };
 }
 
 function normalizeRequirementGroup(group) {
-  if (!group) return [];
-
-  if (Array.isArray(group)) {
-    return group.map((item, index) => normalizeRequirementItem(item, "", index));
+  if (!Array.isArray(group)) {
+    return [];
   }
 
-  if (typeof group === "object") {
-    return Object.entries(group).map(([subject, item], index) => normalizeRequirementItem(item, subject, index));
-  }
-
-  return [normalizeRequirementItem(group)];
+  return group
+    .map((item) => normalizeRequirementItem(item))
+    .filter(Boolean);
 }
 
 function extractRequirements(metadataRoot) {
@@ -100,59 +87,17 @@ function extractRequirements(metadataRoot) {
     };
   }
 
-  const requirementsRoot = getFirstDefined(metadataRoot, [
-    "requirements",
-    "Requirements",
-    "requirement",
-  ]);
+  const hardware = normalizeRequirementGroup(
+    getFirstDefined(metadataRoot, [
+      "hardwareRequirements",
+    ])
+  );
 
-  let hardware = [];
-  let software = [];
-
-  if (Array.isArray(requirementsRoot)) {
-    requirementsRoot.forEach((item, index) => {
-      const category = String(item?.category || "").trim().toLowerCase();
-      const normalized = normalizeRequirementItem(item, "", index);
-
-      if (category === "hardware") {
-        hardware.push(normalized);
-      } else if (category === "software") {
-        software.push(normalized);
-      }
-    });
-  } else if (requirementsRoot && typeof requirementsRoot === "object") {
-    hardware = normalizeRequirementGroup(
-      getFirstDefined(requirementsRoot, [
-        "hardware",
-        "hardwareRequirements",
-      ])
-    );
-
-    software = normalizeRequirementGroup(
-      getFirstDefined(requirementsRoot, [
-        "software",
-        "softwareRequirements",
-      ])
-    );
-  }
-
-  if (hardware.length === 0) {
-    hardware = normalizeRequirementGroup(
-      getFirstDefined(metadataRoot, [
-        "hardwareRequirements",
-        "hardware",
-      ])
-    );
-  }
-
-  if (software.length === 0) {
-    software = normalizeRequirementGroup(
-      getFirstDefined(metadataRoot, [
-        "softwareRequirements",
-        "software",
-      ])
-    );
-  }
+  const software = normalizeRequirementGroup(
+    getFirstDefined(metadataRoot, [
+      "softwareRequirements",
+    ])
+  );
 
   return {
     hardware,
@@ -272,20 +217,6 @@ function resolveMachineRequirements(nodes, catalogs, catalogAvailable = true) {
   };
 }
 
-function normalizeOperator(operator) {
-  const normalized = String(operator || "").trim().toLowerCase();
-
-  if (
-    normalized === "requires" ||
-    normalized === "required" ||
-    normalized === "exists"
-  ) {
-    return "requires";
-  }
-
-  return normalized;
-}
-
 function parseNumericValue(value) {
   const match = String(value || "").trim().match(/^(-?(?:\d+(?:\.\d+)?|\.\d+))\s*(.*)$/);
   if (!match) return null;
@@ -330,11 +261,12 @@ function requirementsContradict(left, right) {
   ) {
     return false;
   }
-
-  const leftOperator = normalizeOperator(left.operator);
-  const rightOperator = normalizeOperator(right.operator);
-
-  if (leftOperator === "requires" || rightOperator === "requires") {
+  const leftOperator = String(left.operator || "").trim();
+  const rightOperator = String(right.operator || "").trim();
+  if (
+    leftOperator === "required" ||
+    rightOperator === "required"
+  ) {
     return false;
   }
 
@@ -342,7 +274,7 @@ function requirementsContradict(left, right) {
     return !valuesEqual(left.value, right.value);
   }
 
-  if (leftOperator === "=" && rightOperator === "is any of") {
+  if (leftOperator === "=" && rightOperator === "in") {
     const set = parseSetValue(right.value);
 
     return (
@@ -351,11 +283,11 @@ function requirementsContradict(left, right) {
     );
   }
 
-  if (leftOperator === "is any of" && rightOperator === "=") {
+  if (leftOperator === "in" && rightOperator === "=") {
     return requirementsContradict(right, left);
   }
 
-  if (leftOperator === "is any of" && rightOperator === "is any of") {
+  if (leftOperator === "in" && rightOperator === "in") {
     const leftSet = parseSetValue(left.value);
     const rightSet = parseSetValue(right.value);
 
@@ -445,7 +377,7 @@ function buildDataspaceRequirements(nodes) {
 
     const apiRequirement = {
       subject: `dataspace.${dataspace}.api`,
-      operator: "requires",
+      operator: "required",
       value: "",
       sourceNodeId: node.id,
       sourceNodeLabel: node.data?.label || node.id,
@@ -551,10 +483,7 @@ function RequirementRow({ requirement, category }) {
           color: requirement.conflict ? "#b91c1c" : "#333",
         }}
       >
-        {requirement.value ||
-          (normalizeOperator(requirement.operator) === "requires"
-            ? "—"
-            : "(empty value)")}
+        {requirement.value || "—"}
       </div>
 
       {requirement.conflict && (

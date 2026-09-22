@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { getArtifacts } from "../services/backendApi";
+import { deleteAllArtifacts, getArtifacts } from "../services/backendApi";
 
 function encodeArtifactPath(path) {
   return String(path || "")
@@ -263,6 +263,7 @@ export default function ArtifactNavigatorModal({
   isOpen,
   onClose,
 }) {
+  const [deleting, setDeleting] = useState(false);
   const [currentPath, setCurrentPath] = useState("");
   const [items, setItems] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -326,6 +327,35 @@ export default function ArtifactNavigatorModal({
   const goBack = () => {
     if (!currentPath) return;
     loadDirectory(getParentPath(currentPath));
+  };
+
+  const clearAllArtifacts = async () => {
+    const confirmed = window.confirm(
+      "Delete all artifacts? This cannot be undone."
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeleting(true);
+      setError("");
+      setSelectedFile(null);
+
+      await deleteAllArtifacts();
+
+      await loadDirectory("");
+    } catch (deleteError) {
+      console.error(deleteError);
+
+      setError(
+        deleteError?.message ||
+        "Failed to delete artifacts."
+      );
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -423,6 +453,24 @@ export default function ArtifactNavigatorModal({
             style={toolbarButtonStyle}
           >
             ↻ Refresh
+          </button>
+
+          <button
+            type="button"
+            onClick={clearAllArtifacts}
+            disabled={deleting || loading}
+            style={{
+              ...toolbarButtonStyle,
+              color: "#b42318",
+              borderColor: "#f0b8b4",
+              opacity: deleting || loading ? 0.45 : 1,
+              cursor:
+                deleting || loading
+                  ? "not-allowed"
+                  : "pointer",
+            }}
+          >
+            {deleting ? "Deleting..." : "Clear All"}
           </button>
 
           <div

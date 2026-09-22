@@ -16,6 +16,7 @@ const WORKSPACE_STORAGE_KEY = "kit-workflow-workspace";
 export default function App() {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
+  const [workflowName, setWorkflowName] = useState("Untitled Workflow");
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState(null);
   const [newParamName, setNewParamName] = useState("");
@@ -324,25 +325,57 @@ export default function App() {
   const runWorkflow = async () => {
     if (isRunning) return;
 
+    const enteredName = window.prompt(
+      "Workflow name",
+      workflowName
+    );
+
+    if (enteredName === null) {
+      return;
+    }
+
+    const nextWorkflowName = enteredName.trim();
+
+    if (!nextWorkflowName) {
+      alert("Workflow name cannot be empty.");
+      return;
+    }
+
+    setWorkflowName(nextWorkflowName);
     setIsRunning(true);
     setRunMessage("Creating workflow...");
 
     try {
-      const graphJson = serializeGraph(nodes, edges);
-      const workflowName = `my-workflow${Math.floor(Math.random() * 1000) + 1}`;
-      const createResult = await createWorkflow(workflowName, graphJson);
+      const graphJson = serializeGraph(
+        nodes,
+        edges,
+        nextWorkflowName
+      );
+
+      const createResult = await createWorkflow(
+        nextWorkflowName,
+        graphJson
+      );
+
       const workflowId = createResult.workflow_id;
 
       if (!workflowId) {
-        throw new Error("The workflow response did not include workflow_id.");
+        throw new Error(
+          "The workflow response did not include workflow_id."
+        );
       }
 
       setRunMessage("Requesting execution...");
-      const executionResult = await requestWorkflowExecution(workflowId);
+
+      const executionResult =
+        await requestWorkflowExecution(workflowId);
 
       console.log("Workflow created:", createResult);
       console.log("Execution requested:", executionResult);
-      setRunMessage(`Execution requested: ${workflowId}`);
+
+      setRunMessage(
+        `Execution requested: ${workflowId}`
+      );
     } catch (error) {
       console.error(error);
       setRunMessage(`Error: ${error.message}`);
@@ -352,13 +385,27 @@ export default function App() {
     }
   };
 
-  const saveWorkflow = async (workflowName) => {
-    const graphJson = serializeGraph(nodes, edges);
+  const saveWorkflow = async (name) => {
+    const nextWorkflowName = name.trim();
+
+    if (!nextWorkflowName) {
+      throw new Error("Workflow name cannot be empty.");
+    }
+
+    const graphJson = serializeGraph(
+      nodes,
+      edges,
+      nextWorkflowName
+    );
 
     const result = await createWorkflow(
-      workflowName,
+      nextWorkflowName,
       graphJson
     );
+
+    // Backend save succeeded:
+    // update the currently opened workflow name.
+    setWorkflowName(nextWorkflowName);
 
     console.log("Workflow saved:", result);
 
@@ -366,7 +413,7 @@ export default function App() {
   };
 
   const exportJson = () => {
-    const graph = serializeGraph(nodes, edges);
+    const graph = serializeGraph(nodes, edges, workflowName);
     const json = JSON.stringify(graph, null, 2);
     console.log(json);
 
@@ -463,7 +510,7 @@ export default function App() {
         },
       };
     });
-
+    setWorkflowName(graph.workflow_name || "Untitled Workflow");
     setNodes(normalizedNodes);
     setEdges(graph.edges.map(normalizeEdgeForCanvas));
     setSelectedNodeId(null);
@@ -502,7 +549,7 @@ export default function App() {
 
     workspaceSaveTimerRef.current = setTimeout(() => {
       try {
-        const graph = serializeGraph(nodes, edges);
+        const graph = serializeGraph(nodes, edges, workflowName);
 
         localStorage.setItem(
           WORKSPACE_STORAGE_KEY,
@@ -518,7 +565,7 @@ export default function App() {
         clearTimeout(workspaceSaveTimerRef.current);
       }
     };
-  }, [nodes, edges, isWorkspaceRestored]);
+  }, [nodes, edges, workflowName, isWorkspaceRestored]);
 
   const loadWorkflowGraph = (databaseGraph) => {
     try {
@@ -692,6 +739,7 @@ export default function App() {
       <GraphCanvas
         nodes={visibleNodes}
         edges={visibleEdges}
+        workflowName={workflowName}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}

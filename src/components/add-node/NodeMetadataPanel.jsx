@@ -434,6 +434,12 @@ function normalizeRequirementGroup(value, category) {
       normalizeRequirementItem(item, category, index)
     );
   }
+  
+  if (typeof value === "object") {
+    return [
+      normalizeRequirementItem(value, category, 0)
+    ];
+  }
 
   if (typeof value === "object") {
     return Object.entries(value).map(([key, rawValue], index) => {

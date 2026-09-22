@@ -201,3 +201,20 @@ export async function negotiateAsset(bpn, assetId) {
     "Negotiation request"
   );
 }
+
+export async function deleteAllArtifacts() {
+  const response = await fetch(
+    `${WORKFLOW_API_BASE_URL}/artifacts`,
+    {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
+
+  return readResponse(
+    response,
+    "Deleting artifacts"
+  );
+}

@@ -1,3 +1,5 @@
+const GUI_VERSION = "1.2";
+
 import {
   getSourceHandleId,
   getTargetHandleId,
@@ -20,7 +22,9 @@ export const normalizeEdgeForCanvas = (edge) => ({
         : getTargetHandleId(edge.targetHandle),
 });
 
-export const serializeGraph = (nodes, edges) => ({
+export const serializeGraph = (nodes, edges, workflowName) => ({
+  gui_version: GUI_VERSION,
+  workflow_name: workflowName,
   nodes,
   edges: edges.map((edge) => ({
     ...edge,
