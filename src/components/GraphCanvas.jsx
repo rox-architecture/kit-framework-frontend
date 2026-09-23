@@ -71,12 +71,12 @@ export default function GraphCanvas({
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
         }}
-        title={workflowName || "Untitled Workflow"}
+        title={workflowName || "Untitled Graph"}
       >
         <span style={{ fontWeight: 600, color: "#777", }}>
-          Workflow Name:
+          Graph Name:
         </span>{" "}
-        {workflowName || "Untitled Workflow"}
+        {workflowName || "Untitled Graph"}
       </div>
 
       <ReactFlow

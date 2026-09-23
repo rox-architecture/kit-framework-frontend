@@ -19,6 +19,7 @@
     - The framework version number is added to the graph JSON data.
     - Typo in the requirement language operator 'requires' is fixed to 'required'.
     - Requirement specification language contradiction detection part is improved.
+    - The word "workflow" is no longer used, and replaced by "graph" within GUI.
 
 - Version 1.1.0
   - Node in the canvas now shows the node type on the top

@@ -80,7 +80,7 @@ export default function GraphToolbar({
             type="button"
             onClick={() => {
               const confirmed = window.confirm(
-                "Create a new workflow? Unsaved changes will be lost."
+                "Create a new graph? Unsaved changes will be lost."
               );
 
               if (!confirmed) return;
@@ -120,11 +120,11 @@ export default function GraphToolbar({
           </button>
 
           <button type="button" onClick={() => setIsLoadWorkflowModalOpen(true)} style={buttonStyle}>
-            Load Workflow
+            Load Graph
           </button>
 
           <button type="button" onClick={() => setIsSaveWorkflowModalOpen(true)} style={buttonStyle}>
-            Save Workflow
+            Save Graph
           </button>
 
           <button type="button" onClick={() => importInputRef.current?.click()} style={buttonStyle}>
@@ -136,11 +136,11 @@ export default function GraphToolbar({
           </button>
 
           <button type="button" onClick={() => setIsExecutionManagerModalOpen(true)} style={buttonStyle}>
-            Execution Manager
+            Execution History
           </button>
 
           <button type="button" onClick={() => setIsWorkflowRequirementsModalOpen(true)} style={buttonStyle}>
-            Workflow Requirements
+            Consolidated Requirements
           </button>
 
           <button

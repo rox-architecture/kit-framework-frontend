@@ -2,7 +2,7 @@
 set -e
 
 # Did you also update the version at config/version.js?
-VERSION=1.2.2
+VERSION=1.2.3
 
 docker buildx build \
   --platform linux/amd64,linux/arm64 \

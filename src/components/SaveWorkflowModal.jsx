@@ -13,7 +13,7 @@ export default function SaveWorkflowModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    setWorkflowName(currentWorkflowName || "Untitled Workflow");
+    setWorkflowName(currentWorkflowName || "Untitled Graph");
     setIsSaving(false);
     setError("");
   }, [isOpen, currentWorkflowName]);
@@ -24,7 +24,7 @@ export default function SaveWorkflowModal({
     const name = workflowName.trim();
 
     if (!name) {
-      setError("Please enter a workflow name.");
+      setError("Please enter a graph name.");
       return;
     }
 
@@ -39,7 +39,7 @@ export default function SaveWorkflowModal({
       console.error(saveError);
       setError(
         saveError?.message ||
-          "Failed to save workflow."
+          "Failed to save graph."
       );
     } finally {
       setIsSaving(false);
@@ -81,7 +81,7 @@ export default function SaveWorkflowModal({
             fontSize: 16,
           }}
         >
-          Save Workflow
+          Save Graph
         </div>
 
         <div style={{ padding: 16 }}>
@@ -94,7 +94,7 @@ export default function SaveWorkflowModal({
               marginBottom: 6,
             }}
           >
-            Workflow Name
+            Graph Name
           </label>
 
           <input
@@ -103,7 +103,7 @@ export default function SaveWorkflowModal({
             value={workflowName}
             autoFocus
             disabled={isSaving}
-            placeholder="Enter workflow name"
+            placeholder="Enter graph name"
             onChange={(event) => {
               setWorkflowName(event.target.value);
               if (error) setError("");

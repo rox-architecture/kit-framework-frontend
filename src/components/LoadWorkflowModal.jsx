@@ -47,7 +47,7 @@ export default function LoadWorkflowModal({ isOpen, onClose, onLoad }) {
       workflow_name:
         selectedWorkflow.workflow_name ||
         selectedWorkflow.graph_json.workflow_name ||
-        "Untitled Workflow",
+        "Untitled Graph",
     });
 
     onClose();
@@ -120,7 +120,7 @@ export default function LoadWorkflowModal({ isOpen, onClose, onLoad }) {
             justifyContent: "space-between",
           }}
         >
-          <strong>Load Workflow</strong>
+          <strong>Load Graph</strong>
           <button type="button" onClick={onClose}>✕</button>
         </div>
 
@@ -144,7 +144,7 @@ export default function LoadWorkflowModal({ isOpen, onClose, onLoad }) {
                 <tr style={{ background: "#f5f5f5" }}>
                   <th style={{ width: 42, padding: 10, borderBottom: "1px solid #ddd" }} />
                   <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #ddd" }}>
-                    Workflow Name
+                    Graph Name
                   </th>
                   <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #ddd" }}>
                     Workflow ID
